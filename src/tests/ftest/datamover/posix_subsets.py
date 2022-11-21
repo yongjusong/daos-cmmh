@@ -3,9 +3,12 @@
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
 '''
+import os
 from os.path import join
 import re
+
 from data_mover_test_base import DataMoverTestBase
+from duns_utils import format_path, parse_path
 
 
 class DmvrPosixSubsets(DataMoverTestBase):
@@ -48,7 +51,7 @@ class DmvrPosixSubsets(DataMoverTestBase):
         self.set_tool(tool)
 
         # Start dfuse to hold all pools/containers
-        self.start_dfuse(self.dfuse_hosts)
+        self.start_dfuse(self.hostlist_clients)
 
         # Create 1 pool
         pool1 = self.create_pool()
@@ -67,94 +70,116 @@ class DmvrPosixSubsets(DataMoverTestBase):
         container2 = self.get_container(pool1)
 
         # Create some source directories in the container
-        sub_dir = self.new_daos_test_path(False)
-        sub_sub_dir = self.new_daos_test_path(True, container1, sub_dir)
+        sub_dir = self.new_daos_test_path()
+        sub_sub_dir = self.new_daos_test_path(parent=sub_dir)
+        self.execute_cmd('mkdir -p {}'.format(container1.path.value + sub_sub_dir))
 
         # Create initial test files
-        self.write_location("DAOS_UUID", '/', pool1, container1)
-        self.write_location("DAOS_UUID", sub_dir, pool1, container1)
-        self.write_location("DAOS_UUID", sub_sub_dir, pool1, container1)
-        self.write_location("POSIX", dfuse_src_dir)
+        self.write_location(format_path(pool1, container1, '/'))
+        self.write_location(format_path(pool1, container1, sub_dir))
+        self.write_location(format_path(pool1, container1, sub_sub_dir))
+        self.write_location(dfuse_src_dir)
 
         copy_list = []
 
         # For each copy, use a new destination directory.
         # This ensures that the source directory is copied
         # *to* the destination, instead of *into* it.
-        sub_dir2 = self.new_daos_test_path(False)
+        sub_dir2 = self.new_daos_test_path()
         copy_list.append([
             "copy_subsets (uuid sub_dir to uuid sub_dir)",
-            ["DAOS_UUID", sub_dir, pool1, container1],
-            ["DAOS_UUID", sub_dir2, pool1, container1]])
+            format_path(pool1, container1, sub_dir),
+            format_path(pool1, container1, sub_dir2)])
 
-        sub_sub_dir2 = self.new_daos_test_path(False, parent=sub_dir2)
+        sub_sub_dir2 = self.new_daos_test_path(parent=sub_dir2)
         copy_list.append([
             "copy_subsets (uuid sub_sub_dir to uuid sub_sub_dir)",
-            ["DAOS_UUID", sub_sub_dir, pool1, container1],
-            ["DAOS_UUID", sub_sub_dir2, pool1, container1]])
+            format_path(pool1, container1, sub_sub_dir),
+            format_path(pool1, container1, sub_sub_dir2)])
 
         # FS_COPY does not yet support UNS subsets
         if self.tool != "FS_COPY":
-            sub_dir2 = self.new_daos_test_path(False)
+            sub_dir2 = self.new_daos_test_path()
             copy_list.append([
                 "copy_subsets (uuid sub_dir to uns sub_dir)",
-                ["DAOS_UUID", sub_dir, pool1, container1],
-                ["DAOS_UNS", sub_dir2, pool1, container1]])
+                format_path(pool1, container1, sub_dir),
+                format_path(pool1, container1, sub_dir2)])
 
-            sub_sub_dir2 = self.new_daos_test_path(False, parent=sub_dir2)
+            sub_sub_dir2 = self.new_daos_test_path(parent=sub_dir2)
             copy_list.append([
                 "copy_subsets (uuid sub_dir to uns sub_sub_dir)",
-                ["DAOS_UUID", sub_dir, pool1, container1],
-                ["DAOS_UNS", sub_sub_dir2, pool1, container1]])
+                format_path(pool1, container1, sub_dir),
+                os.path.join(container1.path.value, sub_sub_dir2)])
 
-            sub_dir2 = self.new_daos_test_path(False)
+            sub_dir2 = self.new_daos_test_path()
             copy_list.append([
                 "copy_subsets (uns sub_dir to uuid sub_dir)",
-                ["DAOS_UNS", sub_dir, pool1, container1],
-                ["DAOS_UUID", sub_dir2, pool1, container1]])
+                os.path.join(container1.path.value, sub_dir),
+                format_path(pool1, container1, sub_dir2)])
 
-            sub_sub_dir2 = self.new_daos_test_path(False, parent=sub_dir2)
+            sub_sub_dir2 = self.new_daos_test_path(parent=sub_dir2)
             copy_list.append([
                 "copy_subsets (uns sub_sub_dir to uuid sub_sub_dir)",
-                ["DAOS_UNS", sub_sub_dir, pool1, container1],
-                ["DAOS_UUID", sub_sub_dir2, pool1, container1]])
+                os.path.join(container1.path.value, sub_sub_dir),
+                format_path(pool1, container1, sub_sub_dir2)])
 
             sub_dir3 = self.new_daos_test_path(False)
             copy_list.append([
                 "copy_subsets (uuid root to new uuid sub_dir)",
-                ["DAOS_UUID", '/', pool1, container1],
-                ["DAOS_UUID", sub_dir3, pool1, container2]])
+                format_path(pool1, container1),
+                format_path(pool1, container2, sub_dir3)])
 
             dfuse_dst_dir = self.new_posix_test_path(
                 create=False,
                 parent=join(self.dfuse.mount_dir.value, pool1.uuid, dfuse_cont2.uuid))
             copy_list.append([
                 "copy_subsets (dfuse root to new dfuse dir)",
-                ["POSIX", dfuse_src_dir, None, None],
-                ["POSIX", dfuse_dst_dir, None, None]])
+                dfuse_src_dir,
+                dfuse_dst_dir])
 
         # Run and verify each copy.
-        # Each src or dst is a list of params:
-        #   [param_type, path, pool, cont]
         for (test_desc, src, dst) in copy_list:
-            result = self.run_datamover(
-                test_desc,
-                src[0], src[1], src[2], src[3],
-                dst[0], dst[1], dst[2], dst[3])
+            result = self.run_datamover(test_desc, src=src, dst=dst)
             self.read_verify_location(*dst)
             if self.tool == "FS_COPY":
                 if not re.search(r"Successfully copied to DAOS", result.stdout_text):
                     self.fail("Failed to copy to DAOS")
 
-    def write_location(self, param_type, path, pool=None, cont=None):
-        """Write the test data using ior."""
-        self.run_ior_with_params(param_type, path, pool, cont,
-                                 self.test_file, self.ior_flags[0])
+    def write_location(self, path):
+        """Write the test data using ior.
 
-    def read_verify_location(self, param_type, path, pool=None, cont=None):
-        """Read and verify the test data using ior."""
-        self.run_ior_with_params(param_type, path, pool, cont,
-                                 self.test_file, self.ior_flags[1])
+        Args:
+            path (str): POSIX or DAOS path to write to.
+
+        """
+        if path.startswith('daos:'):
+            api = 'DFS'
+            pool, cont, path = parse_path(path)
+            path = path or '/'
+        else:
+            api = 'POSIX'
+            pool = None
+            cont = None
+        path = join(path, self.test_file.lstrip('/'))
+        self.run_ior_with_params(api, path, pool, cont, flags=self.ior_flags[0])
+
+    def read_verify_location(self, path):
+        """Read and verify the test data using ior.
+
+        Args:
+            path (str): POSIX or DAOS path to verify.
+
+        """
+        if path.startswith('daos:'):
+            api = 'DFS'
+            pool, cont, path = parse_path(path)
+            path = path or '/'
+        else:
+            api = 'POSIX'
+            pool = None
+            cont = None
+        path = join(path, self.test_file.lstrip('/'))
+        self.run_ior_with_params(api, path, pool, cont, flags=self.ior_flags[1])
 
     def test_dm_posix_subsets_dcp(self):
         """
