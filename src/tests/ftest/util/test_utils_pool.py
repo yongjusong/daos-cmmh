@@ -80,7 +80,7 @@ def remove_pool(test, pool):
 
     # Attempt to destroy the pool
     try:
-        pool.destroy(force=1, disconnect=1, recursive=1)
+        pool.destroy(force=1, disconnect=1, recursive=None)
     except (DaosApiError, TestFail) as error:
         test.test_log.info("  {}".format(error))
         error_list.append("Error destroying pool {}: {}".format(pool.identifier, error))
@@ -223,6 +223,9 @@ class TestPool(TestDaosApiBase):
         # Flag to allow the non-create operations to use UUID. e.g., if you want
         # to destroy the pool with UUID, set this to False, then call destroy().
         self.use_label = True
+
+        # Whether to destroy the pool with --recursive
+        self.use_destroy_recursive = True
 
         self._dmg = None
         self.dmg = dmg_command
@@ -472,7 +475,7 @@ class TestPool(TestDaosApiBase):
 
     @fail_on(CommandFailure)
     @fail_on(DaosApiError)
-    def destroy(self, force=1, disconnect=1, recursive=1):
+    def destroy(self, force=1, disconnect=1, recursive=None):
         """Destroy the pool with either API or dmg.
 
         It uses control_method member previously set, so if you want to use the
@@ -481,13 +484,15 @@ class TestPool(TestDaosApiBase):
         Args:
             force (int, optional): force flag. Defaults to 1.
             disconnect (int, optional): disconnect flag. Defaults to 1.
-            recursive (int, optional): recursive flag. Defaults to 1.
+            recursive (int, optional): recursive flag. Defaults to self.use_destroy_recursive.
 
         Returns:
             bool: True if the pool has been destroyed; False if the pool is not
                 defined.
 
         """
+        if recursive is None:
+            recursive = self.use_destroy_recursive
         status = False
         if self.pool:
             if disconnect:
