@@ -710,11 +710,23 @@ class TestWithServers(TestWithoutServers):
         default_access_points = self.hostlist_servers[:access_points_qty]
         self.access_points = NodeSet(
             self.params.get("access_points", "/run/setup/*", default_access_points))
+        self.server_access_points = self.access_points
+        self.agent_access_points = self.access_points
         self.access_points_suffix = self.params.get(
             "access_points_suffix", "/run/setup/*", self.access_points_suffix)
+        self.server_access_points_suffix = self.params.get(
+            "server_access_points_suffix", "/run/setup/*", self.access_points_suffix)
+        self.agent_access_points_suffix = self.params.get(
+            "agent_access_points_suffix", "/run/setup/*", self.access_points_suffix)
         if self.access_points_suffix:
             self.access_points = nodeset_append_suffix(
                 self.access_points, self.access_points_suffix)
+        if self.server_access_points_suffix:
+            self.server_access_points = nodeset_append_suffix(
+                self.server_access_points, self.server_access_points_suffix)
+        if self.agent_access_points_suffix:
+            self.agent_access_points = nodeset_append_suffix(
+                self.agent_access_points, self.agent_access_points_suffix)
         self.host_info.access_points = self.access_points
 
         # # Find a configuration that meets the test requirements
@@ -939,7 +951,7 @@ class TestWithServers(TestWithoutServers):
             agent_groups = {
                 self.server_group: {
                     "hosts": include_local_host(self.hostlist_clients),
-                    "access_points": self.access_points
+                    "access_points": self.agent_access_points
                 }
             }
 
@@ -976,7 +988,7 @@ class TestWithServers(TestWithoutServers):
             server_groups = {
                 self.server_group: {
                     "hosts": self.hostlist_servers,
-                    "access_points": self.access_points,
+                    "access_points": self.server_access_points,
                     "svr_config_file": None,
                     "dmg_config_file": None,
                     "svr_config_temp": None,
