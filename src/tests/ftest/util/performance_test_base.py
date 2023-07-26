@@ -118,11 +118,6 @@ class PerformanceTestBase(IorTestBase, MdtestBase):
                 log_path = os.path.join(metrics_dir, log_name)
                 self.log_performance(host_results["stdout"], False, log_path)
 
-    @property
-    def unique_id(self):
-        """A unique id for each test case ran."""
-        return "{}-{}".format(self.job_id, os.getpid())
-
     def phase_barrier(self):
         """Sleep barrier meant to be used between IO phases.
 
@@ -146,7 +141,7 @@ class PerformanceTestBase(IorTestBase, MdtestBase):
         # Start with common parameters
         # Build a list of [PARAM_NAME, PARAM_VALUE]
         params = [
-            ["TEST_ID", self.unique_id],
+            ["TEST_ID", self.job_id],
             ["TEST_NAME", self.test_id],
             ["TEST_GROUP", group],
             ["NUM_SERVERS", self.perf_params.num_servers],
@@ -312,7 +307,7 @@ class PerformanceTestBase(IorTestBase, MdtestBase):
 
     def run_performance_ior(self, namespace=None, use_intercept=True, stop_delay_write=None,
                             stop_delay_read=None, num_iterations=1,
-                            restart_between_iterations=True):
+                            restart_between_iterations=True, ior_params=None):
         """Run an IOR performance test.
 
         Write and Read are ran separately.
@@ -330,6 +325,7 @@ class PerformanceTestBase(IorTestBase, MdtestBase):
                 Default is 1.
             restart_between_iterations (int, optional): whether to restart the servers between
                 iterations. Default is True.
+            ior_params (dict, optional): ior params to override
 
         """
         if stop_delay_write is not None and (stop_delay_write < 0 or stop_delay_write > 1):
@@ -346,6 +342,9 @@ class PerformanceTestBase(IorTestBase, MdtestBase):
             self.ior_cmd.namespace = namespace
             self.ior_cmd.get_params(self)
             self.set_processes_ppn(namespace)
+
+        if ior_params:
+            self.ior_cmd.update_params(**ior_params)
 
         if use_intercept and self.ior_cmd.api.value == 'POSIX':
             intercept = os.path.join(self.prefix, 'lib64', 'libioil.so')
