@@ -246,30 +246,30 @@ info "Finalizing spdk install"
 for item in $(find "$DAOS_INSTALL_DIR/share/daos" -type f)
 do
         dest="/usr/${item#$DAOS_INSTALL_DIR/}"
-        run $CLUSH_EXE $CLUSH_OPTS -l root -w $SERVERS_LIST install -v -D -o root -g root -m 755 "$item" "$dest"
+        run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST sudo install -v -D -o root -g root -m 755 "$item" "$dest"
 done
 
 info "Finalizing daos-server-helper install"
 run chmod 0446 "$DAOS_INSTALL_DIR/bin/daos_server_helper"
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $SERVERS_LIST cp -f "$DAOS_INSTALL_DIR/bin/daos_server_helper" /usr/bin
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $SERVERS_LIST chown root:daos_server /usr/bin/daos_server_helper
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $SERVERS_LIST chmod 4755 /usr/bin/daos_server_helper
+run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST sudo cp -f "$DAOS_INSTALL_DIR/bin/daos_server_helper" /usr/bin
+run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST sudo chown root:daos_server /usr/bin/daos_server_helper
+run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST sudo chmod 4755 /usr/bin/daos_server_helper
 run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST chmod a-x  "$DAOS_INSTALL_DIR/bin/daos_server_helper"
 
 {% if "daos_clients" in groups and groups["daos_clients"] | length > 0 %}
 info "Finalizing dfuse install"
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $CLIENTS_LIST cp -f "$DAOS_INSTALL_DIR/bin/dfuse" /usr/bin
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $CLIENTS_LIST chown root:root /usr/bin/dfuse
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $CLIENTS_LIST chmod 755 /usr/bin/dfuse
+run $CLUSH_EXE $CLUSH_OPTS -w $CLIENTS_LIST sudo cp -f "$DAOS_INSTALL_DIR/bin/dfuse" /usr/bin
+run $CLUSH_EXE $CLUSH_OPTS -w $CLIENTS_LIST sudo chown root:root /usr/bin/dfuse
+run $CLUSH_EXE $CLUSH_OPTS -w $CLIENTS_LIST sudo chmod 755 /usr/bin/dfuse
 {% endif %}
 
 info "Updating dynamic linker configuration"
 {% if "daos_clients" in groups and groups["daos_clients"] | length > 0 %}
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $SERVERS_LIST -w $CLIENTS_LIST rm -f /etc/ld.so.cache
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $SERVERS_LIST -w $CLIENTS_LIST ldconfig
+run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST -w $CLIENTS_LIST sudo rm -f /etc/ld.so.cache
+run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST -w $CLIENTS_LIST sudo ldconfig
 {% else %}
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $SERVERS_LIST rm -f /etc/ld.so.cache
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $SERVERS_LIST ldconfig
+run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST sudo rm -f /etc/ld.so.cache
+run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST sudo ldconfig
 {% endif %}
 
 if [[ ${MPICH_PATH:+x} ]] ; then
@@ -366,7 +366,7 @@ if [[ ${MPICH_PATH:+x} ]] ; then
 		mkdir -p /usr/share/modulefiles/mpi
 		ln -fs "$DAOS_INSTALL_DIR/share/modulefiles/mpich-x86_64" /usr/share/modulefiles/mpi/mpich-x86_64
 		EOF
-	} | run $CLUSH_EXE $CLUSH_OPTS -l root -w $CLIENTS_LIST -w $SERVERS_LIST bash -s
+	} | run $CLUSH_EXE $CLUSH_OPTS -w $CLIENTS_LIST -w $SERVERS_LIST sudo bash -s
 fi
 
 if [[ ${HDF5_PATH:+x} ]] ; then
@@ -617,9 +617,9 @@ fi
 
 info "Updating dynamic linker configuration"
 {% if "daos_clients" in groups and groups["daos_clients"] | length > 0 %}
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $SERVERS_LIST -w $CLIENTS_LIST rm -f /etc/ld.so.cache
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $SERVERS_LIST -w $CLIENTS_LIST ldconfig
+run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST -w $CLIENTS_LIST sudo rm -f /etc/ld.so.cache
+run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST -w $CLIENTS_LIST sudo ldconfig
 {% else %}
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $SERVERS_LIST rm -f /etc/ld.so.cache
-run $CLUSH_EXE $CLUSH_OPTS -l root -w $SERVERS_LIST ldconfig
+run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST sudo rm -f /etc/ld.so.cache
+run $CLUSH_EXE $CLUSH_OPTS -w $SERVERS_LIST sudo ldconfig
 {% endif %}
