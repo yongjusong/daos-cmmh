@@ -152,11 +152,12 @@ enum {
 };
 
 enum {
-	D_TM_SERVER_PROCESS		= 0x000,
-	D_TM_SERIALIZATION		= 0x001,
-	D_TM_RETAIN_SHMEM		= 0x002,
-	D_TM_RETAIN_SHMEM_IF_NON_EMPTY	= 0x004,
-	D_TM_OPEN_OR_CREATE		= 0x008,
+	D_TM_SERVER_PROCESS            = 0x000,
+	D_TM_SERIALIZATION             = 0x001,
+	D_TM_RETAIN_SHMEM              = 0x002,
+	D_TM_RETAIN_SHMEM_IF_NON_EMPTY = 0x004,
+	D_TM_OPEN_OR_CREATE            = 0x008,
+	D_TM_OTHER_RW                  = 0x010,
 };
 
 /** Output formats */
