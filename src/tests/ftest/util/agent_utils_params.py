@@ -61,6 +61,8 @@ class DaosAgentYamlParameters(YamlParameters):
         self.log_file = LogParameter(log_dir, None, "daos_agent.log")
         self.control_log_mask = BasicParameter(None, "debug")
         self.exclude_fabric_ifaces = BasicParameter(None)
+        self.telemetry_port = BasicParameter(None)
+        self.telemetry_retain = BasicParameter(None)
 
     def update_log_file(self, name):
         """Update the log file name for the daos agent.
