@@ -456,24 +456,30 @@ func (srv *server) start(ctx context.Context) error {
 		sysdb:   srv.sysdb,
 		events:  srv.pubSub,
 	}
+	srv.log.Info("before drpcServerSetup")
 	// Single daos_server dRPC server to handle all engine requests
 	if err := drpcServerSetup(ctx, drpcSetupReq); err != nil {
 		return errors.WithMessage(err, "dRPC server setup")
 	}
+	srv.log.Info("after drpcServerSetup")
 	defer func() {
 		if err := drpcCleanup(srv.cfg.SocketDir); err != nil {
 			srv.log.Errorf("error during dRPC cleanup: %s", err)
 		}
 	}()
 
+	srv.log.Info("before startAsyncLoops")
 	srv.mgmtSvc.startAsyncLoops(ctx)
+	srv.log.Info("after startAsyncLoops")
 
+	srv.log.Info("before AutoFormat")
 	if srv.cfg.AutoFormat {
 		srv.log.Notice("--auto flag set on server start so formatting storage now")
 		if _, err := srv.ctlSvc.StorageFormat(ctx, &ctlpb.StorageFormatReq{}); err != nil {
 			return errors.WithMessage(err, "attempting to auto format")
 		}
 	}
+	srv.log.Info("after AutoFormat")
 
 	return errors.Wrapf(srv.harness.Start(ctx, srv.sysdb, srv.cfg),
 		"%s harness exited", build.ControlPlaneName)
