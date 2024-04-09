@@ -23,6 +23,21 @@ class LintFailure(Exception):
     """Exception for lint failures."""
 
 
+class TagSet(set):
+    """Set with handling for negative entries."""
+    def issubset(self, other):
+        for tag in self:
+            if tag.startswith('-'):
+                if tag[1:] in other:
+                    return False
+            elif tag not in other:
+                return False
+        return True
+
+    def issuperset(self, other):
+        return TagSet(other).issubset(self)
+
+
 def all_python_files(path):
     """Get a list of all .py files recursively in a directory.
 
@@ -345,7 +360,7 @@ def run_linter(paths=None, verbose=False):
         raise errors[0]
 
 
-def run_dump(paths=None):
+def run_dump(paths=None, filter_tags=None):
     """Dump the tags per test.
 
     Formatted as
@@ -354,24 +369,49 @@ def run_dump(paths=None):
             <method name> - <tags>
 
     Args:
-        paths (list, optional): path(s) to get tags for. Defaults to all ftest python files
+        paths (list, optional): path(s) to filter the dump by. Defaults to all ftest python files
+        filter_tags (list, optional): tag(s) to filter the dump by. Defaults to all ftest tags
     """
     if not paths:
         paths = all_python_files(FTEST_DIR)
+
+    filter_tags = [set(_tags.split(',')) for _tags in filter_tags or []]
+
+    dump = {}
+
     for file_path, classes in iter(FtestTagMap(paths)):
         short_file_path = re.findall(r'ftest/(.*$)', file_path)[0]
-        print(f'{short_file_path}:')
+        dump[short_file_path] = {}
         for class_name, functions in classes.items():
-            print(f'  {class_name}:')
+            dump[short_file_path][class_name] = {}
             all_methods = []
             longest_method_name = 0
-            for method_name, tags in functions.items():
+            for method_name, method_tags in functions.items():
+                # Filter by tags
+                if filter_tags and not any(map(TagSet(method_tags).issuperset, filter_tags)):
+                    continue
+
                 longest_method_name = max(longest_method_name, len(method_name))
-                all_methods.append((method_name, tags))
-            for method_name, tags in all_methods:
+                all_methods.append((method_name, method_tags))
+            for method_name, method_tags in all_methods:
                 method_name_fm = method_name.ljust(longest_method_name, " ")
-                tags_fm = ",".join(sorted_tags(tags))
-                print(f'    {method_name_fm} - {tags_fm}')
+                method_tags_fm = ",".join(sorted_tags(method_tags))
+                dump[short_file_path][class_name][method_name_fm] = method_tags_fm
+
+            # Don't include classes if all methods are filtered out
+            if not dump[short_file_path][class_name]:
+                del dump[short_file_path][class_name]
+
+        # Don't include paths if all classes are filtered out
+        if not dump[short_file_path]:
+            del dump[short_file_path]
+
+    for file_path, classes in dump.items():
+        print(f'{file_path}:')
+        for class_name, methods in classes.items():
+            print(f'  {class_name}:')
+            for method_name, tags in methods.items():
+                print(f'    {method_name} - {tags}')
 
 
 def files_to_tags(paths):
@@ -471,6 +511,42 @@ def run_list(paths):
     print(' '.join(sorted(tags)))
 
 
+def test_tag_set():
+    """Run unit tests for TagSet.
+
+    Can be ran directly as:
+        tags.py unit
+    Or with pytest as:
+        python3 -m pytest tags.py
+
+    Args:
+        verbose (bool): whether to print verbose output for debugging
+    """
+    print('START Ftest TagSet Unit Tests')
+
+    def print_step(*args):
+        """Print a step."""
+        print('  ', *args)
+
+    l_hw_medium = ['hw', 'medium']
+    l_hw_medium_provider = l_hw_medium = ['provider']
+    l_hw_medium_minus_provider = l_hw_medium + ['-provider']
+
+    print_step('issubset')
+    assert TagSet(l_hw_medium).issubset(l_hw_medium_provider)
+    assert not TagSet(l_hw_medium_minus_provider).issubset(l_hw_medium_provider)
+
+    print_step('issuperset')
+    assert TagSet(l_hw_medium_provider).issuperset(l_hw_medium)
+    assert TagSet(l_hw_medium_provider).issuperset(set(l_hw_medium))
+    assert TagSet(l_hw_medium_provider).issuperset(TagSet(l_hw_medium))
+    assert not TagSet(l_hw_medium_provider).issuperset(l_hw_medium_minus_provider)
+    assert not TagSet(l_hw_medium_provider).issuperset(set(l_hw_medium_minus_provider))
+    assert not TagSet(l_hw_medium_provider).issuperset(TagSet(l_hw_medium_minus_provider))
+
+    print('PASS  Ftest TagSet Unit Tests')
+
+
 def test_tags_util(verbose=False):
     """Run unit tests for FtestTagMap.
 
@@ -483,7 +559,7 @@ def test_tags_util(verbose=False):
         verbose (bool): whether to print verbose output for debugging
     """
     # pylint: disable=protected-access
-    print('Ftest Tags Utility Unit Tests')
+    print('START Ftest Tags Utility Unit Tests')
     tag_map = FtestTagMap([])
     os.chdir('/')
 
@@ -560,7 +636,7 @@ def test_tags_util(verbose=False):
     expected_tags = set(['test_harness_config', 'test_ior_small', 'test_dfuse_mu_perms'])
     assert len(tag_map.unique_tags().intersection(expected_tags)) == len(expected_tags)
 
-    print('Ftest Tags Utility Unit Tests PASSED')
+    print('PASS  Ftest Tags Utility Unit Tests')
 
 
 def main():
@@ -583,6 +659,10 @@ def main():
         action='store_true',
         help="print verbose output for some commands")
     parser.add_argument(
+        "--tags",
+        nargs="+",
+        help="file paths")
+    parser.add_argument(
         "paths",
         nargs="*",
         help="file paths")
@@ -598,7 +678,7 @@ def main():
         sys.exit(0)
 
     if args.command == "dump":
-        run_dump(args.paths)
+        run_dump(args.paths, args.tags)
         sys.exit(0)
 
     if args.command == "list":
@@ -606,6 +686,7 @@ def main():
         sys.exit(0)
 
     if args.command == "unit":
+        test_tag_set()
         test_tags_util(args.verbose)
         sys.exit(0)
 
