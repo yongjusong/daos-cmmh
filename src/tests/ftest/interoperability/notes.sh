@@ -40,13 +40,15 @@ clush -S -B -w $ALL_NODES "sudo systemctl stop daos_agent; sudo systemctl stop d
                         sudo dnf config-manager --enable daos-packages-2.4.1 &&
                         rpm -qa | grep daos | sort;" || echo 'Failed';
 
-# To get local avocado to work with RPM install
-# TODO: need a proper configurable way to do this
-cp /usr/lib/daos/.build_vars.* /home/dbohning/daos/install/lib/daos/
 
 # Rebuild just ftest locally
 # Or however you rebuild ftest python changes
 ~/bin/daos_rebuild_ftest
+
+# To get local avocado to work with RPM install
+# Need to replace path to local install with "/usr"
+# TODO: need a proper configurable way to do this
+sed -i 's/"PREFIX".*/  "PREFIX": "\/usr"/g' .build_vars.json
 
 # Run launch.py
 # Really just however you would run the test "test_upgrade_downgrade"
@@ -55,7 +57,7 @@ DAOS_CLIENTS=boro-[24]
 DAOS_SERVERS=boro-[25-27]
 export PYTHONPATH=/home/dbohning/daos/install/lib/daos/TESTING/ftest:$PYTHONPATH; \
 cd ~/daos/install/lib/daos/TESTING/ftest/;  \
-cp /usr/lib/daos/.build_vars.* /home/dbohning/daos/install/lib/daos/;  \
+sed -i 's/"PREFIX".*/  "PREFIX": "\/usr"/g' .build_vars.json  \
 ./launch.py --provider "ofi+tcp;ofi_rxm" -aro -tc $DAOS_CLIENTS -ts $DAOS_SERVERS test_upgrade_downgrade;
 
 
