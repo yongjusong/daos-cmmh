@@ -2,7 +2,7 @@
 /* groovylint-disable-next-line LineLength */
 /* groovylint-disable DuplicateMapLiteral, DuplicateNumberLiteral */
 /* groovylint-disable DuplicateStringLiteral, NestedBlockDepth, VariableName */
-/* Copyright 2019-2023 Intel Corporation
+/* Copyright 2019-2024 Intel Corporation
  * All rights reserved.
  *
  * This file is part of the DAOS Project. It is subject to the license terms
@@ -108,7 +108,8 @@ void fixup_rpmlintrc() {
                     '/usr/bin/hello_drpc',
                     '/usr/bin/daos_firmware',
                     '/usr/bin/daos_admin',
-                    '/usr/bin/daos_server']
+                    '/usr/bin/daos_server',
+                    '/usr/bin/ddb']
 
     String content = readFile(file: 'utils/rpms/daos.rpmlintrc') + '\n\n' +
                      '# https://daosio.atlassian.net/browse/DAOS-11534\n'
@@ -322,27 +323,21 @@ pipeline {
                 }
             }
         }
-        stage('Get Commit Message') {
-            steps {
-                script {
-                    env.COMMIT_MESSAGE = sh(script: 'git show -s --format=%B',
-                                            returnStdout: true).trim()
-                    Map pragmas = [:]
-                    // can't use eachLine() here: https://issues.jenkins.io/browse/JENKINS-46988/
-                    env.COMMIT_MESSAGE.split('\n').each { line ->
-                        String key, value
-                        try {
-                            (key, value) = line.split(':', 2)
-                            if (key.contains(' ')) {
-                                return
-                            }
-                            pragmas[key.toLowerCase()] = value
-                        /* groovylint-disable-next-line CatchArrayIndexOutOfBoundsException */
-                        } catch (ArrayIndexOutOfBoundsException ignored) {
-                            // ignore and move on to the next line
+        stage('Prepare Environment Variables') {
+            // TODO: Could/should these be moved to the environment block?
+            parallel {
+                stage('Get Commit Message') {
+                    steps {
+                        pragmasToEnv()
+                    }
+                }
+                stage('Determine Release Branch') {
+                    steps {
+                        script {
+                            env.RELEASE_BRANCH = releaseBranch()
+                            echo 'Release branch == ' + env.RELEASE_BRANCH
                         }
                     }
-                    env.pragmas = pragmas
                 }
             }
         }
@@ -400,66 +395,6 @@ pipeline {
                 expression { !skipStage() }
             }
             parallel {
-                stage('checkpatch') {
-                    when {
-                        beforeAgent true
-                        expression { !skipStage() }
-                    }
-                    agent {
-                        dockerfile {
-                            filename 'Dockerfile.checkpatch'
-                            dir 'utils/docker'
-                            label 'docker_runner'
-                            additionalBuildArgs dockerBuildArgs(add_repos: false)
-                        }
-                    }
-                    steps {
-                        checkPatch user: GITHUB_USER_USR,
-                                   password: GITHUB_USER_PSW,
-                                   ignored_files: 'src/control/vendor/*:' +
-                                                  '*.pb-c.[ch]:' +
-                                                  'src/client/java/daos-java/src/main/java/io/daos/dfs/uns/*:' +
-                                                  'src/client/java/daos-java/src/main/java/io/daos/obj/attr/*:' +
-                                                  /* groovylint-disable-next-line LineLength */
-                                                  'src/client/java/daos-java/src/main/native/include/daos_jni_common.h:' +
-                                                  '*.crt:' +
-                                                  '*.pem:' +
-                                                  '*_test.go:' +
-                                                  'src/cart/_structures_from_macros_.h:' +
-                                                  'src/tests/ftest/*.patch:' +
-                                                  'src/tests/ftest/large_stdout.txt'
-                    }
-                    post {
-                        always {
-                            job_status_update()
-                            /* when JENKINS-39203 is resolved, can probably use stepResult
-                               here and remove the remaining post conditions
-                               stepResult name: env.STAGE_NAME,
-                                          context: 'build/' + env.STAGE_NAME,
-                                          result: ${currentBuild.currentResult}
-                            */
-                        }
-                        /* temporarily moved some stuff into stepResult due to JENKINS-39203
-                        failure {
-                            githubNotify credentialsId: 'daos-jenkins-commit-status',
-                                         description: env.STAGE_NAME,
-                                         context: 'pre-build/' + env.STAGE_NAME,
-                                         status: 'ERROR'
-                        }
-                        success {
-                            githubNotify credentialsId: 'daos-jenkins-commit-status',
-                                         description: env.STAGE_NAME,
-                                         context: 'pre-build/' + env.STAGE_NAME,
-                                         status: 'SUCCESS'
-                        }
-                        unstable {
-                            githubNotify credentialsId: 'daos-jenkins-commit-status',
-                                         description: env.STAGE_NAME,
-                                         context: 'pre-build/' + env.STAGE_NAME,
-                                         status: 'FAILURE'
-                        } */
-                    }
-                } // stage('checkpatch')
                 stage('Python Bandit check') {
                     when {
                         beforeAgent true
@@ -509,8 +444,11 @@ pipeline {
                             filename 'packaging/Dockerfile.mockbuild'
                             dir 'utils/rpms'
                             label 'docker_runner'
-                            additionalBuildArgs dockerBuildArgs() + '--build-arg FVERSION=38'
-                            args '--cap-add=SYS_ADMIN'
+                            args '--group-add mock'     +
+                                 ' --cap-add=SYS_ADMIN' +
+                                 ' -v /scratch:/scratch'
+                            additionalBuildArgs dockerBuildArgs()
+
                         }
                     }
                     steps {
@@ -546,8 +484,10 @@ pipeline {
                             filename 'packaging/Dockerfile.mockbuild'
                             dir 'utils/rpms'
                             label 'docker_runner'
-                            additionalBuildArgs dockerBuildArgs() + '--build-arg FVERSION=38'
-                            args '--cap-add=SYS_ADMIN'
+                            args '--group-add mock'     +
+                                 ' --cap-add=SYS_ADMIN' +
+                                 ' -v /scratch:/scratch'
+                            additionalBuildArgs dockerBuildArgs()
                         }
                     }
                     steps {
@@ -583,8 +523,10 @@ pipeline {
                             filename 'packaging/Dockerfile.mockbuild'
                             dir 'utils/rpms'
                             label 'docker_runner'
-                            additionalBuildArgs dockerBuildArgs() + '--build-arg FVERSION=38'
-                            args  '--cap-add=SYS_ADMIN'
+                            args '--group-add mock'     +
+                                 ' --cap-add=SYS_ADMIN' +
+                                 ' -v /scratch:/scratch'
+                            additionalBuildArgs dockerBuildArgs()
                         }
                     }
                     steps {
@@ -620,8 +562,8 @@ pipeline {
                             filename 'packaging/Dockerfile.ubuntu.20.04'
                             dir 'utils/rpms'
                             label 'docker_runner'
-                            additionalBuildArgs dockerBuildArgs()
                             args '--cap-add=SYS_ADMIN'
+                            additionalBuildArgs dockerBuildArgs()
                         }
                     }
                     steps {
@@ -841,7 +783,6 @@ pipeline {
                                          valgrind_stash: 'el8-gcc-nlt-memcheck'
                             recordIssues enabledForFailure: true,
                                          failOnError: false,
-                                         ignoreFailedBuilds: true,
                                          ignoreQualityGate: true,
                                          name: 'NLT server leaks',
                                          qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]],
@@ -1076,10 +1017,10 @@ pipeline {
                     post {
                         always {
                             discoverGitReferenceBuild referenceJob: 'daos-stack/daos/master',
-                                                      scm: 'daos-stack/daos'
+                                                      scm: 'daos-stack/daos',
+                                                      requiredResult: hudson.model.Result.UNSTABLE
                             recordIssues enabledForFailure: true,
                                          failOnError: false,
-                                         ignoreFailedBuilds: true,
                                          ignoreQualityGate: true,
                                          qualityGates: [[threshold: 1, type: 'TOTAL_ERROR'],
                                                         [threshold: 1, type: 'TOTAL_HIGH'],
@@ -1100,78 +1041,78 @@ pipeline {
                         }
                     }
                 } // stage('Fault inection testing on EL 8.8')
-                // stage('Test RPMs on EL 8.6') {
-                //     when {
-                //         beforeAgent true
-                //         expression { ! skipStage() }
-                //     }
-                //     agent {
-                //         label params.CI_UNIT_VM1_LABEL
-                //     }
-                //     steps {
-                //         job_step_update(
-                //             testRpm(inst_repos: daosRepos(),
-                //                     daos_pkg_version: daosPackagesVersion(next_version))
-                //         )
-                //     }
-                //     post {
-                //         always {
-                //             rpm_test_post(env.STAGE_NAME, env.NODELIST)
-                //         }
-                //     }
-                // } // stage('Test CentOS 7 RPMs')
-                // stage('Test RPMs on Leap 15.4') {
-                //     when {
-                //         beforeAgent true
-                //         expression { ! skipStage() }
-                //     }
-                //     agent {
-                //         label params.CI_UNIT_VM1_LABEL
-                //     }
-                //     steps {
-                //         /* neither of these work as FTest strips the first node
-                //            out of the pool requiring 2 node clusters at minimum
-                //          * additionally for this use-case, can't override
-                //            ftest_arg with this :-(
-                //         script {
-                //             'Test RPMs on Leap 15.4': getFunctionalTestStage(
-                //                 name: 'Test RPMs on Leap 15.4',
-                //                 pragma_suffix: '',
-                //                 label: params.CI_UNIT_VM1_LABEL,
-                //                 next_version: next_version,
-                //                 stage_tags: '',
-                //                 default_tags: 'test_daos_management',
-                //                 nvme: 'auto',
-                //                 run_if_pr: true,
-                //                 run_if_landing: true,
-                //                 job_status: job_status_internal
-                //             )
-                //         }
-                //            job_step_update(
-                //             functionalTest(
-                //                 test_tag: 'test_daos_management',
-                //                 ftest_arg: '--yaml_extension single_host',
-                //                 inst_repos: daosRepos(),
-                //                 inst_rpms: functionalPackages(1, next_version, 'tests-internal'),
-                //                 test_function: 'runTestFunctionalV2'))
-                //     }
-                //     post {
-                //         always {
-                //             functionalTestPostV2()
-                //             job_status_update()
-                //         }
-                //     } */
-                //         job_step_update(
-                //             testRpm(inst_repos: daosRepos(),
-                //                     daos_pkg_version: daosPackagesVersion(next_version))
-                //         )
-                //     }
-                //     post {
-                //         always {
-                //             rpm_test_post(env.STAGE_NAME, env.NODELIST)
-                //         }
-                //     }
-                // } // stage('Test Leap 15 RPMs')
+                stage('Test RPMs on EL 8.6') {
+                    when {
+                        beforeAgent true
+                        expression { ! skipStage() }
+                    }
+                    agent {
+                        label params.CI_UNIT_VM1_LABEL
+                    }
+                    steps {
+                        job_step_update(
+                            testRpm(inst_repos: daosRepos(),
+                                    daos_pkg_version: daosPackagesVersion(next_version))
+                        )
+                    }
+                    post {
+                        always {
+                            rpm_test_post(env.STAGE_NAME, env.NODELIST)
+                        }
+                    }
+                } // stage('Test CentOS 7 RPMs')
+                stage('Test RPMs on Leap 15.4') {
+                    when {
+                        beforeAgent true
+                        expression { ! skipStage() }
+                    }
+                    agent {
+                        label params.CI_UNIT_VM1_LABEL
+                    }
+                    steps {
+                        /* neither of these work as FTest strips the first node
+                           out of the pool requiring 2 node clusters at minimum
+                         * additionally for this use-case, can't override
+                           ftest_arg with this :-(
+                        script {
+                            'Test RPMs on Leap 15.4': getFunctionalTestStage(
+                                name: 'Test RPMs on Leap 15.4',
+                                pragma_suffix: '',
+                                label: params.CI_UNIT_VM1_LABEL,
+                                next_version: next_version,
+                                stage_tags: '',
+                                default_tags: 'test_daos_management',
+                                nvme: 'auto',
+                                run_if_pr: true,
+                                run_if_landing: true,
+                                job_status: job_status_internal
+                            )
+                        }
+                           job_step_update(
+                            functionalTest(
+                                test_tag: 'test_daos_management',
+                                ftest_arg: '--yaml_extension single_host',
+                                inst_repos: daosRepos(),
+                                inst_rpms: functionalPackages(1, next_version, 'tests-internal'),
+                                test_function: 'runTestFunctionalV2'))
+                    }
+                    post {
+                        always {
+                            functionalTestPostV2()
+                            job_status_update()
+                        }
+                    } */
+                        job_step_update(
+                            testRpm(inst_repos: daosRepos(),
+                                    daos_pkg_version: daosPackagesVersion(next_version))
+                        )
+                    }
+                    post {
+                        always {
+                            rpm_test_post(env.STAGE_NAME, env.NODELIST)
+                        }
+                    }
+                } // stage('Test Leap 15 RPMs')
             } // parallel
         } // stage('Test')
         stage('Test Storage Prep on EL 8.8') {
@@ -1262,7 +1203,7 @@ pipeline {
                             stage_tags: 'hw,medium,provider',
                             default_tags: startedByTimer() ? 'pr daily_regression' : 'pr',
                             default_nvme: 'auto',
-                            provider: 'ucx+dc_x',
+                            provider: cachedCommitPragma('Test-provider-ucx', 'ucx+ud_x'),
                             run_if_pr: false,
                             run_if_landing: false,
                             job_status: job_status_internal

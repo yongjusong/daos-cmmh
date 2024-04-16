@@ -11,6 +11,7 @@
 #include <daos_pool.h>
 #include <daos_srv/bio.h>
 #include <daos_srv/vea.h>
+#include <daos_srv/daos_chk.h>
 #include <daos/object.h>
 #include <daos/dtx.h>
 #include <daos/checksum.h>
@@ -24,15 +25,6 @@
 struct dtx_rsrvd_uint {
 	void			*dru_scm;
 	d_list_t		dru_nvme;
-};
-
-enum dtx_cos_flags {
-	DCF_SHARED		= (1 << 0),
-	/* Some DTX (such as for the distributed transaction across multiple
-	 * RDGs, or for EC object modification) need to be committed via DTX
-	 * RPC instead of piggyback via other dispatched update/punch RPC.
-	 */
-	DCF_EXP_CMT		= (1 << 1),
 };
 
 enum dtx_stat_flags {
@@ -97,6 +89,8 @@ enum vos_pool_open_flags {
 	VOS_POF_RDB	= (1 << 4),
 	/** SYS DB pool */
 	VOS_POF_SYSDB	= (1 << 5),
+	/** Open the pool for daos check query, that will bypass EXEL flags. */
+	VOS_POF_FOR_CHECK_QUERY = (1 << 6),
 };
 
 enum vos_oi_attr {
@@ -139,6 +133,17 @@ struct vos_pool_space {
 #define NVME_FREE(vps)	((vps)->vps_space.s_free[DAOS_MEDIA_NVME])
 #define NVME_SYS(vps)	((vps)->vps_space_sys[DAOS_MEDIA_NVME])
 
+struct chk_pool_info {
+	/** DAOS check phase on the pool shard. */
+	uint32_t		cpi_phase;
+	/** DAOS check instance status on the pool shard. */
+	uint32_t		cpi_ins_status;
+	/** Inconsistency information for DAOS check on the pool shard. */
+	struct chk_statistics	cpi_statistics;
+	/** Time information for DAOS check on the pool shard. */
+	struct chk_time		cpi_time;
+};
+
 /**
  * pool attributes returned to query
  */
@@ -149,6 +154,8 @@ typedef struct {
 	struct vos_pool_space	pif_space;
 	/** garbage collector statistics */
 	struct vos_gc_stat	pif_gc_stat;
+	/** DAOS check related information */
+	struct chk_pool_info	pif_chk;
 	/** TODO */
 } vos_pool_info_t;
 
@@ -289,7 +296,7 @@ enum {
 	/** Dynamic evtree root supported for this pool */
 	VOS_POOL_FEAT_DYN_ROOT = (1ULL << 2),
 	/** Embedded value in tree root supported */
-	VOS_POOL_FEAT_EMB_VALUE = (1ULL << 3),
+	VOS_POOL_FEAT_EMBED_FIRST = (1ULL << 3),
 	/** Flat DKEY support enabled */
 	VOS_POOL_FEAT_FLAT_DKEY = (1ULL << 4),
 };

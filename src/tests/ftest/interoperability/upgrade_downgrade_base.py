@@ -274,11 +274,17 @@ class UpgradeDowngradeBase(IorTestBase):
             all_hosts (NodeSet): all hosts.
             hosts_client (NodeSet): client hosts to show daos and dmg version.
         """
-        if not run_remote(self.log, all_hosts, 'rpm -qa | grep -E "daos-|libfabric|mercury" | sort').passed:
+        result = run_remote(
+            self.log, all_hosts, 'rpm -qa | grep -E "daos-|libfabric|mercury" | sort')
+        if not result.passed:
             self.fail("Failed to check daos RPMs")
-        if not run_remote(self.log, NodeSet(hosts_client[0]), "dmg version").passed:
+
+        result = run_remote(self.log, NodeSet(hosts_client[0]), "dmg version")
+        if not result.passed:
             self.fail("Failed to check dmg version")
-        if not run_remote(self.log, hosts_client, "daos version").passed:
+
+        result = run_remote(self.log, hosts_client, "daos version")
+        if not result.passed:
             self.fail("Failed to check daos version")
 
     def verify_rpms(self):
@@ -540,8 +546,8 @@ class UpgradeDowngradeBase(IorTestBase):
             testfile_sav2 = os.path.join(dfuse_mount_dir, "testfile_sav2")
             symlink_testfile = os.path.join(dfuse_mount_dir, "symlink_testfile")
             self.log.info("Mounting dfuse")
-            cmd = "/usr/bin/dfuse --disable-caching --mountpoint {0} --pool {1} --container {2}".format(
-                dfuse_mount_dir, container.pool.identifier, container.identifier)
+            cmd = f'/usr/bin/dfuse --disable-caching --mountpoint {dfuse_mount_dir} ' \
+                  f'--pool {container.pool.identifier} --container {container.identifier}'
             if not run_remote(self.log, clients, cmd).passed:
                 self.fail("Failed to mount dfuse")
 
@@ -876,7 +882,8 @@ class UpgradeDowngradeBase(IorTestBase):
                 else:
                     self.fail(
                         'daos pool query expected to fail with DER_NOTSUPPORTED for '
-                        f'v{self.current_client_version} client, v{self.current_server_version} pool')
+                        f'v{self.current_client_version} client, '
+                        f'v{self.current_server_version} pool')
                 finally:
                     tmp_pool.destroy()
 

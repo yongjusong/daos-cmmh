@@ -1155,7 +1155,7 @@ process_pool_cb(d_list_t *rlink, void *arg)
 		for (i = SCHED_REQ_UPDATE; i < SCHED_REQ_MAX; i++) {
 			if (is_system_req(i))
 				continue;
-			tmp = kick[i] * MAX_KICKED_REQ_CNT / rpc_cnt;
+			tmp = (uint64_t)kick[i] * MAX_KICKED_REQ_CNT / rpc_cnt;
 			kick[i] = tmp;
 		}
 	}
@@ -1356,7 +1356,7 @@ req_need_reject(struct sched_req_attr *attr, struct sched_info *info)
 	 */
 	for (i = SCHED_REQ_UPDATE; i < SCHED_REQ_MAX; i++) {
 		if (!is_system_req(i)) {
-			estimated_time += info->si_req_cnt[i] * req_latencys[i];
+			estimated_time += (uint64_t)info->si_req_cnt[i] * req_latencys[i];
 			req_num += info->si_req_cnt[i];
 		}
 	}
@@ -1496,9 +1496,8 @@ sched_req_sleep(struct sched_request *req, uint32_t msecs)
 static void
 req_wakeup_internal(struct dss_xstream *dx, struct sched_request *req)
 {
-	D_ASSERT(req != NULL);
 	/* The request is not in sleep */
-	if (req->sr_wakeup_time == 0)
+	if (req == NULL || req->sr_wakeup_time == 0)
 		return;
 
 	D_ASSERT(req->sr_in_heap == 0);
@@ -1656,8 +1655,8 @@ sched_stop(struct dss_xstream *dx)
 	process_all(dx);
 }
 
-void
-sched_cond_wait(ABT_cond cond, ABT_mutex mutex)
+static void
+cond_wait(ABT_cond cond, ABT_mutex mutex, bool for_business)
 {
 	struct dss_xstream	*dx = dss_current_xstream();
 	struct sched_info	*info = &dx->dx_sched_info;
@@ -1666,6 +1665,20 @@ sched_cond_wait(ABT_cond cond, ABT_mutex mutex)
 	ABT_cond_wait(cond, mutex);
 	D_ASSERT(info->si_wait_cnt > 0);
 	info->si_wait_cnt -= 1;
+	if (for_business)
+		info->si_stats.ss_busy_ts = info->si_cur_ts;
+}
+
+void
+sched_cond_wait(ABT_cond cond, ABT_mutex mutex)
+{
+	cond_wait(cond, mutex, false /* for_business */);
+}
+
+void
+sched_cond_wait_for_business(ABT_cond cond, ABT_mutex mutex)
+{
+	cond_wait(cond, mutex, true /* for_business */);
 }
 
 uint64_t
@@ -2095,7 +2108,9 @@ watchdog_enabled(struct dss_xstream *dx)
 	if (sched_unit_runtime_max == 0)
 		return false;
 
-	return dx->dx_xs_id == 0 || (sched_watchdog_all && dx->dx_main_xs);
+	/* Enable watchdog for system and swim xstream by default. */
+	return dx->dx_xs_id == 0 || dx->dx_xs_id == 1 ||
+			(sched_watchdog_all && dx->dx_xs_id != 2);
 }
 
 int

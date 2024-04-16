@@ -264,7 +264,8 @@ crt_opc_decode(crt_opcode_t crt_opc, char **module_name, char **opc_name)
 /* Redefining X macro allows to reuse existing lists */
 #define X(a, ...)                                                                                  \
 	case a:                                                                                    \
-		opc = #a;
+		opc = #a;                                                                          \
+		break;
 
 	/* Next find the opcode name if available for the module  */
 	if (cart_module) {
@@ -656,9 +657,9 @@ int
 crt_req_create(crt_context_t crt_ctx, crt_endpoint_t *tgt_ep, crt_opcode_t opc,
 	       crt_rpc_t **req)
 {
-	int rc = 0;
-	struct crt_grp_priv *grp_priv = NULL;
+	struct crt_grp_priv	*grp_priv = NULL;
 	struct crt_rpc_priv	*rpc_priv;
+	int			rc = 0;
 
 	if (crt_ctx == CRT_CONTEXT_NULL || req == NULL) {
 		D_ERROR("invalid parameter (NULL crt_ctx or req).\n");
@@ -1776,10 +1777,9 @@ crt_handle_rpc(void *arg)
 int
 crt_rpc_common_hdlr(struct crt_rpc_priv *rpc_priv)
 {
-	struct crt_context	*crt_ctx;
-	int			 rc = 0;
-	bool			skip_check = false;
-	d_rank_t		self_rank;
+	struct crt_context *crt_ctx;
+	int                 rc = 0;
+	d_rank_t            self_rank;
 
 	D_ASSERT(rpc_priv != NULL);
 	crt_ctx = rpc_priv->crp_pub.cr_ctx;
@@ -1790,10 +1790,7 @@ crt_rpc_common_hdlr(struct crt_rpc_priv *rpc_priv)
 	if (rpc_priv->crp_fail_hlc)
 		D_GOTO(out, rc = -DER_HLC_SYNC);
 
-	if (self_rank == CRT_NO_RANK)
-		skip_check = true;
-
-	/* Skip check when CORPC is sent to self */
+	/* Skip check when CORPC is sent to self, for crp_req_hdr is invalid */
 	if (rpc_priv->crp_coll) {
 		d_rank_t pri_root;
 
@@ -1801,27 +1798,21 @@ crt_rpc_common_hdlr(struct crt_rpc_priv *rpc_priv)
 				rpc_priv->crp_corpc_info->co_grp_priv,
 				rpc_priv->crp_corpc_info->co_root);
 
-		if (pri_root == self_rank)
-			skip_check = true;
+		if (self_rank == CRT_NO_RANK || pri_root == self_rank)
+			goto skip_check;
 	}
 
-	if ((self_rank != rpc_priv->crp_req_hdr.cch_dst_rank) ||
-	    (crt_ctx->cc_idx != rpc_priv->crp_req_hdr.cch_dst_tag)) {
-		if (!skip_check) {
-			D_ERROR("Mismatch rpc: %p opc: %x rank:%d tag:%d "
-				"self:%d cc_idx:%d ep_rank:%d ep_tag:%d\n",
-				rpc_priv,
-				rpc_priv->crp_pub.cr_opc,
-				rpc_priv->crp_req_hdr.cch_dst_rank,
-				rpc_priv->crp_req_hdr.cch_dst_tag,
-				self_rank,
-				crt_ctx->cc_idx,
-				rpc_priv->crp_pub.cr_ep.ep_rank,
-				rpc_priv->crp_pub.cr_ep.ep_tag);
+	if ((self_rank != CRT_NO_RANK && self_rank != rpc_priv->crp_req_hdr.cch_dst_rank) ||
+	    crt_ctx->cc_idx != rpc_priv->crp_req_hdr.cch_dst_tag) {
+		D_ERROR("Mismatch rpc: %p opc: %x rank:%d tag:%d "
+			"self:%d cc_idx:%d ep_rank:%d ep_tag:%d\n",
+			rpc_priv, rpc_priv->crp_pub.cr_opc, rpc_priv->crp_req_hdr.cch_dst_rank,
+			rpc_priv->crp_req_hdr.cch_dst_tag, self_rank, crt_ctx->cc_idx,
+			rpc_priv->crp_pub.cr_ep.ep_rank, rpc_priv->crp_pub.cr_ep.ep_tag);
 
-			D_GOTO(out, rc = -DER_BAD_TARGET);
-		}
+		D_GOTO(out, rc = -DER_BAD_TARGET);
 	}
+skip_check:
 
 	/* Set the reply pending bit unless this is a one-way OPCODE */
 	if (!rpc_priv->crp_opc_info->coi_no_reply)

@@ -7,10 +7,11 @@ import os
 from socket import gethostname
 
 from ClusterShell.NodeSet import NodeSet
+
 # pylint: disable=import-error,no-name-in-module
 try:
     from slurm_utils import SlurmFailed, get_partition_hosts, get_reservation_hosts
-except:
+except (ModuleNotFoundError, ImportError):
     from util.slurm_utils import SlurmFailed, get_partition_hosts, get_reservation_hosts
 
 

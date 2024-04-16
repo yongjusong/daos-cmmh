@@ -11,10 +11,11 @@ from grp import getgrgid
 from pwd import getpwnam
 
 from ClusterShell.NodeSet import NodeSet
+
 # pylint: disable=import-error,no-name-in-module
 try:
     from run_utils import run_remote
-except:
+except (ModuleNotFoundError, ImportError):
     from util.run_utils import run_remote
 
 

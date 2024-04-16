@@ -1,5 +1,5 @@
 /**
- * (C) Copyright 2016-2022 Intel Corporation.
+ * (C) Copyright 2016-2024 Intel Corporation.
  *
  * SPDX-License-Identifier: BSD-2-Clause-Patent
  */
@@ -16,6 +16,7 @@
 #include "obj_rpc.h"
 #include "obj_internal.h"
 
+unsigned int	obj_coll_thd;
 unsigned int	srv_io_mode = DIM_DTX_FULL_ENABLED;
 int		dc_obj_proto_version;
 
@@ -66,6 +67,25 @@ dc_obj_init(void)
 		else
 			daos_rpc_unregister(&obj_proto_fmt_v10);
 		D_GOTO(out_class, rc);
+	}
+
+	rc = dbtree_class_register(DBTREE_CLASS_COLL, BTR_FEAT_UINT_KEY | BTR_FEAT_DYNAMIC_ROOT,
+				   &dbtree_coll_ops);
+	if (rc != 0)
+		goto out_class;
+
+	obj_coll_thd = OBJ_COLL_THD_MIN;
+	d_getenv_uint("DAOS_OBJ_COLL_THD", &obj_coll_thd);
+	if (obj_coll_thd == 0) {
+		D_INFO("Disable collective operation.\n");
+	} else {
+		if (obj_coll_thd < OBJ_COLL_THD_MIN) {
+			D_WARN("Invalid collective operation threshold %u, either larger than %u, "
+			       "or zero for disabling collective operation. Use default value %u\n",
+			       obj_coll_thd, OBJ_COLL_THD_MIN - 1, OBJ_COLL_THD_MIN);
+			obj_coll_thd = OBJ_COLL_THD_MIN;
+		}
+		D_INFO("Set object collective operation threshold as %u\n", obj_coll_thd);
 	}
 
 	tx_verify_rdg = false;
