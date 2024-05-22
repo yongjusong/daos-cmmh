@@ -39,11 +39,6 @@ pipeline {
     agent { label 'lightweight' }
 
     // Weekly timed builds disabled on 2-Apr-2024
-    // triggers {
-    //     /* groovylint-disable-next-line AddEmptyString */
-    //     cron(env.BRANCH_NAME == 'weekly-2.4-testing' ? 'TZ=UTC\n0 0 * * 6' : '')
-    // }
-
     environment {
         BULLSEYE = credentials('bullseye_license_key')
         GITHUB_USER = credentials('daos-jenkins-review-posting')
