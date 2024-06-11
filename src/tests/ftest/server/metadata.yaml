@@ -62,8 +62,8 @@ ior:
   iorwriteflags: "-w -W -k -G 1"
   iorreadflags: "-r -R -G 1"
   test_file: /testFile
-  transfer_size: 1K
-  block_size: 1K
+  transfer_size: 128B
+  block_size: 128B
   api: DFS
   dfs_oclass: SX
 metadata:
