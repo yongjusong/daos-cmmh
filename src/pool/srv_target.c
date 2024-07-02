@@ -2571,9 +2571,9 @@ ds_pool_tgt_warmup_handler(crt_rpc_t *rpc)
 out_eventual:
 	ABT_eventual_free(&eventual);
 out:
-	D_FREE(buf);
 	if (bulk_local != NULL)
 		crt_bulk_free(bulk_local);
+	D_FREE(buf);
 	if (rc)
 		D_ERROR("rpc failed, " DF_RC "\n", DP_RC(rc));
 	crt_reply_send(rpc);
