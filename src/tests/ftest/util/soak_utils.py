@@ -16,6 +16,7 @@ from itertools import count, product
 from avocado.core.exceptions import TestFail
 from avocado.utils.distro import detect
 from ClusterShell.NodeSet import NodeSet
+from command_utils import command_as_user
 from command_utils_base import EnvironmentVariables
 from daos_racer_utils import DaosRacerCommand
 from data_mover_utils import DcpCommand, FsCopy
@@ -616,16 +617,16 @@ def launch_reboot(self, pools, name, results, args):
         self.log.info(
             "<<<PASS %s: %s started on ranks %s at %s >>>\n", self.loop, name, ranks, time.ctime())
         # reboot host in 1 min
-        result = run_remote(self.log, reboot_host, "sudo shutdown -r +1")
+        result = run_remote(self.log, reboot_host, command_as_user("shutdown -r +1", "root"))
         if result.passed:
             status = True
         else:
-            self.log.error(f"<<<FAILED:{name} - {reboot_host} failed to issue reboot")
+            self.log.error(f"<<<FAILED: {name} - {reboot_host} failed to issue reboot")
             status = False
 
         if not wait_for_result(self.log, check_ping, 90, 5, True, host=reboot_host,
                                expected_ping=False, cmd_timeout=60, verbose=True):
-            self.log.error(f"<<<FAILED:{name} - {reboot_host} failed to reboot")
+            self.log.error(f"<<<FAILED: {name} - {reboot_host} failed to reboot")
             status = False
 
         if status:
@@ -645,17 +646,18 @@ def launch_reboot(self, pools, name, results, args):
         # wait for node to complete rebooting
         if not wait_for_result(self.log, check_ping, 60, 5, True, host=reboot_host,
                                expected_ping=True, cmd_timeout=60, verbose=True):
-            self.log.error(f"<<<FAILED:{name} - {reboot_host} failed to reboot")
+            self.log.error(f"<<<FAILED: {name} - {reboot_host} failed to reboot")
             status = False
         if not wait_for_result(self.log, check_ssh, 120, 2, True, hosts=reboot_host,
                                cmd_timeout=30, verbose=True):
-            self.log.error(f"<<<FAILED:{name} - {reboot_host} failed to reboot")
+            self.log.error(f"<<<FAILED: {name} - {reboot_host} failed to reboot")
             status = False
         if status:
             # issue a restart
             self.log.info("<<<PASS %s: Issue systemctl restart daos_server on %s at %s>>>\n",
                           self.loop, name, reboot_host, time.ctime())
-            cmd_results = run_remote(self.log, reboot_host, "sudo systemctl restart daos_server")
+            cmd_results = run_remote(
+                self.log, reboot_host, command_as_user("systemctl restart daos_server", "root"))
             if cmd_results.passed:
                 self.dmg_command.system_query()
                 for pool in pools:
