@@ -1613,7 +1613,10 @@ def build_job_script(self, commands, job, nodesperjob, ppn):
     prepend_cmds = ["set +e",
                     "echo Job_Start_Time `date \\+\"%Y-%m-%d %T\"`",
                     "daos pool query {} ".format(self.pool[1].identifier),
-                    "daos pool query {} ".format(self.pool[0].identifier)]
+                    "daos pool query {} ".format(self.pool[0].identifier),
+                    "echo $LD_LIBRARY_PATH",
+                    "echo $PATH",
+                    "echo $VIRTUAL_ENV"]
 
     append_cmds = ["daos pool query {} ".format(self.pool[1].identifier),
                    "daos pool query {} ".format(self.pool[0].identifier),

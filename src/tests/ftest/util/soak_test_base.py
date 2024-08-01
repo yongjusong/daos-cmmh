@@ -679,6 +679,7 @@ class SoakTestBase(TestWithServers):
             self.pool[0], "/run/container_reserved/*", True)
         # populate reserved container with a 500MB file unless test is smoke
         self.initial_resv_file = os.path.join(self.test_dir, "initial", "resv_file")
+        run_local(self.log, "ldd `which daos`", timeout=300)
         try:
             reserved_file_copy(self, self.initial_resv_file, self.pool[0], self.resv_cont,
                                num_bytes=resv_bytes, cmd="write")
