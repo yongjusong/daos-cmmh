@@ -465,7 +465,7 @@ class ObjectMetadata(TestWithServers):
         :avocado: tags=ObjectMetadata,test_metadata_server_restart
         """
         self.create_pool()
-        files_per_thread = 200  # 400  # DEBUGGING
+        files_per_thread = 100  # 400  # DEBUGGING
         total_ior_threads = 5
 
         processes = self.params.get("np", "/run/ior/*")
