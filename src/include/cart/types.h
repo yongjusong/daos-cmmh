@@ -95,8 +95,10 @@ typedef struct crt_init_options {
 
 	/** force busy wait (testing only, not in production) */
 	bool             cio_progress_busy;
-} crt_init_options_t;
 
+	/** use legacy progress method */
+	bool             cio_progress_legacy;
+} crt_init_options_t;
 
 typedef int		crt_status_t;
 /**
