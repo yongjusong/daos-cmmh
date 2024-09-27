@@ -182,7 +182,7 @@ cont_aggregate_runnable(struct ds_cont_child *cont, struct sched_request *req,
 
 	if (pool->sp_rebuilding && !vos_agg) {
 		cont->sc_ec_agg_active = 0;
-		D_DEBUG(DB_EPC, DF_CONT": skip EC aggregation during rebuild %d.\n",
+		D_INFO(DF_CONT": skip EC aggregation during rebuild %d, clear sc_ec_agg_active.\n",
 			DP_CONT(cont->sc_pool->spc_uuid, cont->sc_uuid),
 			pool->sp_rebuilding);
 		return false;
@@ -195,9 +195,11 @@ cont_aggregate_runnable(struct ds_cont_child *cont, struct sched_request *req,
 		cont->sc_vos_agg_active = 1;
 	} else {
 		if (!cont->sc_ec_agg_active)
-			D_DEBUG(DB_EPC, DF_CONT": resume EC aggregation after reintegration.\n",
+			D_INFO(DF_CONT": resume EC aggregation after reintegration.\n",
 				DP_CONT(cont->sc_pool->spc_uuid, cont->sc_uuid));
 		cont->sc_ec_agg_active = 1;
+		D_INFO(DF_CONT": set sc_ec_agg_active\n",
+		       DP_CONT(cont->sc_pool->spc_uuid, cont->sc_uuid));
 	}
 
 	if (!cont->sc_props_fetched)

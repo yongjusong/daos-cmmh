@@ -1074,8 +1074,7 @@ rebuild_scan_leader(void *data)
 		}
 	}
 
-	D_DEBUG(DB_REBUILD, "rebuild scan collective "DF_UUID" begin.\n",
-		DP_UUID(rpt->rt_pool_uuid));
+	D_INFO("rebuild scan collective "DF_UUID" begin.\n", DP_UUID(rpt->rt_pool_uuid));
 
 	rc = ds_pool_thread_collective(rpt->rt_pool_uuid, PO_COMP_ST_NEW | PO_COMP_ST_DOWN |
 				       PO_COMP_ST_DOWNOUT, rebuild_scanner, rpt,
@@ -1083,8 +1082,7 @@ rebuild_scan_leader(void *data)
 	if (rc)
 		D_GOTO(out, rc);
 
-	D_DEBUG(DB_REBUILD, "rebuild scan collective "DF_UUID" done.\n",
-		DP_UUID(rpt->rt_pool_uuid));
+	D_INFO("rebuild scan collective "DF_UUID" done.\n", DP_UUID(rpt->rt_pool_uuid));
 
 	ABT_mutex_lock(rpt->rt_lock);
 	rc = ds_pool_task_collective(rpt->rt_pool_uuid, PO_COMP_ST_NEW | PO_COMP_ST_DOWN |
@@ -1096,8 +1094,8 @@ rebuild_scan_leader(void *data)
 		D_GOTO(out, rc);
 	}
 
-	D_DEBUG(DB_REBUILD, DF_UUID" sent objects to initiator: "DF_RC"\n",
-		DP_UUID(rpt->rt_pool_uuid), DP_RC(rc));
+	D_INFO(DF_UUID" sent objects to initiator: "DF_RC"\n",
+	       DP_UUID(rpt->rt_pool_uuid), DP_RC(rc));
 out:
 	tls = rebuild_pool_tls_lookup(rpt->rt_pool_uuid, rpt->rt_rebuild_ver,
 				      rpt->rt_rebuild_gen);
@@ -1227,6 +1225,8 @@ rebuild_tgt_scan_handler(crt_rpc_t *rpc)
 	}
 
 	rpt->rt_pool->sp_rebuilding++; /* reset in rebuild_tgt_fini */
+	D_INFO(DF_UUID": sp_rebuilding inc to %d\n",
+	       DP_UUID(rpt->rt_pool->sp_uuid), rpt->rt_pool->sp_rebuilding);
 
 	rpt_get(rpt);
 	/* step-3: start scan leader */
