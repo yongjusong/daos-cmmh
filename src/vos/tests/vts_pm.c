@@ -1968,7 +1968,7 @@ many_keys(void **state)
 	assert_rc_equal(rc, 0);
 
 	rex.rx_idx = 0;
-	rex.rx_nr = strlen(w);
+	rex.rx_nr = sizeof(w) - 1;
 
 	iod.iod_type = DAOS_IOD_ARRAY;
 	iod.iod_size = 1;
