@@ -132,6 +132,7 @@ struct crt_hg_context {
 	int                          chc_provider;       /* provider */
 	int                          chc_epfd;           /* epoll fd */
 	struct crt_hg_progress_multi chc_progress_multi; /* multi progress */
+	bool                         chc_thread_mode_single; /* thread safety */
 };
 
 /* crt_hg.c */

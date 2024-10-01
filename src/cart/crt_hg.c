@@ -830,7 +830,8 @@ crt_sep_hg_class_set(crt_provider_t provider, hg_class_t *class)
 }
 
 static int
-crt_hg_class_init(crt_provider_t provider, int ctx_idx, bool primary, int iface_idx, hg_class_t **ret_hg_class)
+crt_hg_class_init(crt_provider_t provider, int ctx_idx, bool primary, int iface_idx,
+		  bool thread_mode_single, hg_class_t **ret_hg_class)
 {
 	char			*info_string = NULL;
 	struct hg_init_info	init_info = HG_INIT_INFO_INITIALIZER;
@@ -871,6 +872,8 @@ crt_hg_class_init(crt_provider_t provider, int ctx_idx, bool primary, int iface_
 	/* Separate SWIM traffic in an effort to prevent potential congestion. */
 	if (crt_is_service() && ctx_idx == crt_gdata.cg_swim_ctx_idx)
 		init_info.traffic_class = (enum na_traffic_class)crt_gdata.cg_swim_tc;
+	if (thread_mode_single)
+		init_info.na_init_info.thread_mode = NA_THREAD_MODE_SINGLE;
 
 	hg_class = HG_Init_opt2(info_string, crt_is_service(), HG_VERSION(2, 4), &init_info);
 	if (hg_class == NULL) {
@@ -934,12 +937,15 @@ crt_hg_ctx_init(struct crt_hg_context *hg_ctx, crt_provider_t provider, int idx,
 
 	hg_ctx->chc_provider = provider;
 	sep_mode             = crt_provider_is_sep(true, provider);
+	if ((!sep_mode && crt_is_service()) || crt_gdata.cg_thread_mode_single)
+		hg_ctx->chc_thread_mode_single = true;
 
 	/* In SEP mode all contexts share same hg_class*/
 	if (sep_mode) {
 		/* Only initialize class for context0 */
 		if (idx == 0) {
-			rc = crt_hg_class_init(provider, idx, primary, iface_idx, &hg_class);
+			rc = crt_hg_class_init(provider, idx, primary, iface_idx,
+					       hg_ctx->chc_thread_mode_single, &hg_class);
 			if (rc != 0)
 				D_GOTO(error, rc);
 
@@ -948,7 +954,8 @@ crt_hg_ctx_init(struct crt_hg_context *hg_ctx, crt_provider_t provider, int idx,
 			hg_class = crt_sep_hg_class_get(provider);
 		}
 	} else {
-		rc = crt_hg_class_init(provider, idx, primary, iface_idx, &hg_class);
+		rc = crt_hg_class_init(provider, idx, primary, iface_idx,
+				       hg_ctx->chc_thread_mode_single, &hg_class);
 		if (rc != 0)
 			D_GOTO(error, rc);
 	}
@@ -1692,7 +1699,8 @@ crt_hg_event_progress_serial(struct crt_hg_context *hg_ctx, const struct timespe
 
 	/* Ensure that only one thread enters progress, other threads will wait until deadline or
 	 * until the current thread has finished progressing. */
-	if (!crt_hg_progress_multi_trylock(&hg_ctx->chc_progress_multi, deadline)) {
+	if (!hg_ctx->chc_thread_mode_single &&
+	    !crt_hg_progress_multi_trylock(&hg_ctx->chc_progress_multi, deadline)) {
 		*trigger_count_p = CRT_HG_TRIGGER_COUNT;
 		return DER_SUCCESS;
 	}
@@ -1728,7 +1736,8 @@ crt_hg_event_progress_serial(struct crt_hg_context *hg_ctx, const struct timespe
 	}
 
 out:
-	crt_hg_progress_multi_unlock(&hg_ctx->chc_progress_multi);
+	if (!hg_ctx->chc_thread_mode_single)
+		crt_hg_progress_multi_unlock(&hg_ctx->chc_progress_multi);
 	return rc;
 }
 

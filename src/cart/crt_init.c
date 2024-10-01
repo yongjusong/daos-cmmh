@@ -639,6 +639,14 @@ crt_init_opt(crt_group_id_t grpid, uint32_t flags, crt_init_options_t *opt)
 			crt_gdata.cg_progress_legacy = progress_legacy;
 		}
 
+		if (opt && opt->cio_thread_mode_single) {
+			crt_gdata.cg_thread_mode_single = opt->cio_thread_mode_single;
+		} else {
+			bool thread_mode_single = false;
+			crt_env_get(D_THREAD_MODE_SINGLE, &thread_mode_single);
+			crt_gdata.cg_thread_mode_single = thread_mode_single;
+		}
+
 		if (opt && opt->cio_auth_key)
 			auth_key = opt->cio_auth_key;
 		else {

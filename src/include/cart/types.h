@@ -98,6 +98,9 @@ typedef struct crt_init_options {
 
 	/** use legacy progress method */
 	bool             cio_progress_legacy;
+
+	/** use single thread to access context */
+	bool             cio_thread_mode_single;
 } crt_init_options_t;
 
 typedef int		crt_status_t;

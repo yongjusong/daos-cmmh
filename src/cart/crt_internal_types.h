@@ -150,6 +150,8 @@ struct crt_gdata {
 	unsigned int             cg_provider_is_primary : 1;
 	/** use legacy progress method */
 	bool                     cg_progress_legacy;
+	/** use single thread to access context */
+	bool                     cg_thread_mode_single;
 
 	ATOMIC uint64_t		cg_rpcid; /* rpc id */
 
@@ -223,6 +225,7 @@ struct crt_event_cb_priv {
 	ENV(D_PORT_AUTO_ADJUST)                                                                    \
 	ENV(D_PROGRESS_BUSY)                                                                       \
 	ENV(D_PROGRESS_LEGACY)                                                                     \
+	ENV(D_THREAD_MODE_SINGLE)                                                                  \
 	ENV(D_POST_INCR)                                                                           \
 	ENV(D_POST_INIT)                                                                           \
 	ENV(D_MRECV_BUF)                                                                           \
