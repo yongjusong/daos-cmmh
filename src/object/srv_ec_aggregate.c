@@ -2270,6 +2270,13 @@ ec_aggregate_yield(struct ec_agg_param *agg_param)
 {
 	int	rc;
 
+	if (agg_param->ap_pool_info.api_pool->sp_rebuilding > 0) {
+		D_INFO(DF_UUID": abort ec aggregation, sp_rebuilding %d\n",
+		       DP_UUID(agg_param->ap_pool_info.api_pool->sp_uuid),
+		       agg_param->ap_pool_info.api_pool->sp_rebuilding);
+		return true;
+	}
+
 	D_ASSERT(agg_param->ap_yield_func != NULL);
 	rc = agg_param->ap_yield_func(agg_param->ap_yield_arg);
 	if (rc < 0) /* Abort */
