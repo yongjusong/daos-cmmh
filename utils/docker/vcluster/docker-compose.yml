@@ -3,12 +3,12 @@
 #
 # Docker Compose file allowing to build and deploy locally a DAOS virtual cluster
 
-#version: "3.8"
+version: "3.8"
 
 services:
 
   daos_base:
-    image:  "daos-base" #"${DAOS_DOCKER_IMAGE_NSP}/daos-base-${LINUX_DISTRO}:${DAOS_DOCKER_IMAGE_TAG}"
+    image: "daos-base" #"${DAOS_DOCKER_IMAGE_NSP}/daos-base-${LINUX_DISTRO}:${DAOS_DOCKER_IMAGE_TAG}"
     build:
       context: "daos-base/el8"
       args:
@@ -31,7 +31,7 @@ services:
         target: /run
 
   daos_server:
-    image: "daos-server" #${DAOS_DOCKER_IMAGE_NSP}/daos-server-${LINUX_DISTRO}:${DAOS_DOCKER_IMAGE_TAG}"
+    image: "daos-server" #"${DAOS_DOCKER_IMAGE_NSP}/daos-server-${LINUX_DISTRO}:${DAOS_DOCKER_IMAGE_TAG}"
     build:
       context: "daos-server/el8"
       args:
@@ -57,8 +57,15 @@ services:
       - "daos-server:${DAOS_IFACE_IP}"
       - "daos-admin:${DAOS_IFACE_IP}"
       - "daos-client:${DAOS_IFACE_IP}"
-    devices:
-      - /dev/nvme0n1:/dev/nvme0n1
+      #devices:
+      #- /dev/nvme1n1:/dev/nvme1n1
+      #- /dev/nvme2n1:/dev/nvme2n1
+      #- /dev/nvme3n1:/dev/nvme3n1
+      #- /dev/nvme4n1:/dev/nvme4n1
+      #- /dev/nvme5n1:/dev/nvme5n1
+      #- /dev/nvme6n1:/dev/nvme6n1
+      #- /dev/nvme7n1:/dev/nvme7n1
+      #- /dev/nvme8n1:/dev/nvme8n1
     volumes:
       - type: bind
         read_only: true
@@ -78,12 +85,15 @@ services:
         target: /sys/devices/system/node
       - type: tmpfs
         target: /run
-      - type: bind
-        source: /mnt/data
-        target: /mnt/data
+        #      - type: bind
+        #source: /mnt/scm
+        #target: /mnt/scm
+        #- type: bind
+        #source: /mnt/nvme
+        #target: /mnt/nvme
 
   daos_admin:
-    image: "daos-admin" #"${DAOS_DOCKER_IMAGE_NSP}/daos-admin-${LINUX_DISTRO}:${DAOS_DOCKER_IMAGE_TAG}"
+    image:  "daos-admin" #"${DAOS_DOCKER_IMAGE_NSP}/daos-admin-${LINUX_DISTRO}:${DAOS_DOCKER_IMAGE_TAG}"
     build:
       context: "daos-admin/el8"
       args:
@@ -104,6 +114,15 @@ services:
       - "daos-server:${DAOS_IFACE_IP}"
       - "daos-admin:${DAOS_IFACE_IP}"
       - "daos-client:${DAOS_IFACE_IP}"
+    devices:
+      - /dev/nvme1n1:/dev/nvme1n1
+      - /dev/nvme2n1:/dev/nvme2n1
+      - /dev/nvme3n1:/dev/nvme3n1
+      - /dev/nvme4n1:/dev/nvme4n1
+      - /dev/nvme5n1:/dev/nvme5n1
+      - /dev/nvme6n1:/dev/nvme6n1
+      - /dev/nvme7n1:/dev/nvme7n1
+      - /dev/nvme8n1:/dev/nvme8n1
     volumes:
       - type: bind
         read_only: true
@@ -111,6 +130,12 @@ services:
         target: /sys/fs/cgroup
       - type: tmpfs
         target: /run
+        #- type: bind
+        #source: /mnt/scm
+        #target: /mnt/scm
+        #- type: bind
+        #source: /mnt/nvme
+        #target: /mnt/nvme
     depends_on:
       - daos_server
 
@@ -140,6 +165,15 @@ services:
       - "daos-server:${DAOS_IFACE_IP}"
       - "daos-admin:${DAOS_IFACE_IP}"
       - "daos-client:${DAOS_IFACE_IP}"
+      #devices:
+      #- /dev/nvme1n1:/dev/nvme1n1
+      ##- /dev/nvme2n1:/dev/nvme2n1
+      #- /dev/nvme3n1:/dev/nvme3n1
+      ##- /dev/nvme4n1:/dev/nvme4n1
+      #- /dev/nvme5n1:/dev/nvme5n1
+      #- /dev/nvme6n1:/dev/nvme6n1
+      #- /dev/nvme7n1:/dev/nvme7n1
+      #- /dev/nvme8n1:/dev/nvme8n1
     volumes:
       - type: bind
         read_only: true

@@ -38,9 +38,13 @@ engines:
     log_mask: INFO
     storage:
       - class: ram
-        scm_mount: /mnt/daos
+        scm_mount: /mnt/scm #/mnt/daos
         scm_size: @DAOS_SCM_SIZE@
+        #      - calss: nvme
+        #bdev_list: ["0000:01:00.0"]
       - class: file
+      #bdev_list: ["0000:01:00.0", "0000:08:00.0"]
+        #- class: file
         bdev_list: [/tmp/daos-bdev]
         bdev_size: @DAOS_BDEV_SIZE@
 @DAOS_MD_ON_SSD_BEGIN@

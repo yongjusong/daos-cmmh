@@ -8,7 +8,7 @@ VERSION=0.3
 CWD="$(realpath "${0%}")"
 CWD="${CWD%/*}"
 
-DAOS_POOL_SIZE=2G #22G
+DAOS_POOL_SIZE=4G #22G
 
 ANSI_COLOR_BLACK=30
 ANSI_COLOR_RED=31
@@ -31,7 +31,7 @@ TRACE_LEVEL_QUIET=-1
 TRACE_LEVEL_STANDARD=0
 TRACE_LEVEL_VERBOSE=1
 TRACE_LEVEL_DEBUG=2
-TRACE_LEVEL=2 #$TRACE_LEVEL_STANDARD
+TRACE_LEVEL=$TRACE_LEVEL_DEBUG
 
 function debug
 {
@@ -40,6 +40,7 @@ function debug
 		echo -e "[\e[${ANSI_COLOR_GREEN}mDEBUG  \e[00m] $@"
 	fi
 }
+
 
 function info
 {
@@ -132,25 +133,14 @@ function stop
 	fi
 }
 
-function wait_for_user
-{
-#	read -p "Press 'y' or 'Enter' to proceed to the next step, or 'q' to quit: " response
-#	if [[ "$response" == "q" ]]; then
-#		echo "Exiting as per user request."
-#		exit 0
-#	fi
-	info ""
-}
-
 function start
 {
 	DAOS_IFACE_IP="${1:?Network Interface IP has to be defined}"
 	DAOS_POOL_SIZE="${2:?Pool size has to be defined}"
 
 	info "Starting DAOS virtual cluster containers"
-	wait_for_user
 	if ! run env DAOS_IFACE_IP="$DAOS_IFACE_IP" docker compose up --detach daos_server daos_admin daos_client ; then
-		fatal "DAOS virtual cluster containers could not be started"
+		fatal "DAOS virtual cluster containers could no be started"
 	fi
 
 	info "Waiting for daos-server services to be started"
@@ -163,7 +153,6 @@ function start
 		fi
 	done
 
-	wait_for_user
 	timeout_counter=10
 	until docker exec daos-server grep -q -e "format required" /tmp/daos_server.log > /dev/null 2>&1 ; do
 		info "Waiting DAOS file system for being ready to be formatted : timeout=$timeout_counter"
@@ -174,7 +163,6 @@ function start
 	done
 	info "DAOS file system ready to be formatted"
 
-	wait_for_user
 	info "Formatting DAOS storage"
 	if ! run docker exec daos-admin dmg storage format --host-list=daos-server ; then
 		fatal "DAOS storage could not be formatted"
@@ -190,53 +178,46 @@ function start
 	done
 	info "DAOS file system formatted"
 
-	wait_for_user
 	info "Checking system state"
 	if ! run docker exec daos-admin dmg system query --verbose ; then
 		fatal "DAOS system not healthy"
 	fi
 
-	wait_for_user
 	info "Creating pool tank of $DAOS_POOL_SIZE"
 	if ! run docker exec daos-admin dmg pool create --size="$DAOS_POOL_SIZE" tank ; then
 		fatal "DAOS pool tank of $DAOS_POOL_SIZE could not be created"
 	fi
 
-	wait_for_user
 	info "Checking pool tank"
 	if ! run docker exec daos-admin dmg pool query tank ; then
 		fatal "DAOS pool tank not healthy"
 	fi
 
-	wait_for_user
 	info "Creating POSIX container posix-fs in tank pool"
 	if ! run docker exec daos-client daos container create --type=posix tank posix-fs ; then
 		fatal "DAOS POSIX container posix-fs could not be created in tank pool"
 	fi
 
-	wait_for_user
 	info "Checking container posix-fs"
 	if ! run docker exec daos-client daos container query --verbose tank posix-fs ; then
 		fatal "DAOS POSIX container posix-fs could not be created in tank pool"
 	fi
 
-	wait_for_user
 	info "Creating mount point /mnt/daos-posix-fs in client container"
 	if ! run docker exec daos-client mkdir /mnt/daos-posix-fs ; then
 		fatal "Mount point /mnt/daos-posix-fs could not be created in daos-client container"
 	fi
 
-	wait_for_user
 	info "Mounting DAOS posix-fs container on /mnt/daos-posix-fs"
 	if ! run docker exec daos-client dfuse /mnt/daos-posix-fs tank posix-fs ; then
 		fatal "DAOS POSIX container posix-fs could not be created in tank pool"
 	fi
 
-	wait_for_user
 	info "Checking mount point /mnt/daos-posix-fs"
 	if ! run docker exec daos-client /usr/bin/df --human-readable --type=fuse.daos ; then
-		fatal "Mount point /mnt/daos-posix-fs not properly mounted"
-	fi
+
+                fatal "Mount point /mnt/daos-posix-fs not properly mounted"
+        fi
 
 	[[ $TRACE_LEVEL -ge $TRACE_LEVEL_STANDARD ]] || return 0
 
@@ -259,11 +240,11 @@ do
 		-z|--pool-size) DAOS_POOL_SIZE="$2" ; shift 2 ;;
 		-h|--help) usage ; exit 0;;
 		-V|--version) echo "daos-cm.sh version=$VERSION" ; exit 0 ;;
-			-v|--verbose) TRACE_LEVEL=$TRACE_LEVEL_VERBOSE ; shift 1 ;;
-			-D|--debug) TRACE_LEVEL=$TRACE_LEVEL_DEBUG ; set -x ; shift 1 ;;
-			-q|--quiet) TRACE_LEVEL=$TRACE_LEVEL_QUIET ; shift 1 ;;
-			--) shift ; break ;;
-			*) fatal "unrecognized command line option" ;;
+		-v|--verbose) TRACE_LEVEL=$TRACE_LEVEL_VERBOSE ; shift 1 ;;
+		-D|--debug) TRACE_LEVEL=$TRACE_LEVEL_DEBUG ; set -x ; shift 1 ;;
+		-q|--quiet) TRACE_LEVEL=$TRACE_LEVEL_QUIET ; shift 1 ;;
+		--) shift ; break ;;
+		*) fatal "unrecognized command line option" ;;
 	esac
 done
 
@@ -279,4 +260,3 @@ case "$CMD" in
 	state) state ;;
 	*) fatal "Unsupported command $CMD: try with start, stop or state" ;;
 esac
-
