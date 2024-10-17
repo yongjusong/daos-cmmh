@@ -37,19 +37,32 @@ engines:
     log_file: /tmp/daos_engine_0.log
     log_mask: INFO
     storage:
-      - class: ram
-        scm_mount: /mnt/scm #/mnt/daos
+      - class: ram 
+        scm_mount: /mnt/scm
         scm_size: @DAOS_SCM_SIZE@
-        #      - calss: nvme
-        #bdev_list: ["0000:01:00.0"]
-      - class: file
-      #bdev_list: ["0000:01:00.0", "0000:08:00.0"]
-        #- class: file
-        bdev_list: [/tmp/daos-bdev]
-        bdev_size: @DAOS_BDEV_SIZE@
-@DAOS_MD_ON_SSD_BEGIN@
+      - class: kdev
+        bdev_list: ['/dev/nvme0n1']
+        #bdev_list: ['0000:01:00.0'] #, '0000:03:00.0', '0000:43:00.0', '0000:44:00.0']
+        bdev_roles:
+          - data
+      - class: kdev
+        bdev_list: ['/dev/pmem0']
         bdev_roles:
           - meta
-          - wal
-          - data
-@DAOS_MD_ON_SSD_END@
+          - wal 
+#    storage:
+#      - class: ram
+#        scm_mount: /mnt/daos
+#        scm_size: @DAOS_SCM_SIZE@
+#      - class: file
+#        bdev_list: [/tmp/daos-bdev]
+#        bdev_size: @DAOS_BDEV_SIZE@
+#@DAOS_MD_ON_SSD_BEGIN@
+#        bdev_roles:
+#          - meta
+#          - wal
+#          - data
+#@DAOS_MD_ON_SSD_END@
+
+#documentation: |
+

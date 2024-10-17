@@ -8,7 +8,7 @@ VERSION=0.3
 CWD="$(realpath "${0%}")"
 CWD="${CWD%/*}"
 
-DAOS_POOL_SIZE=2G #22G
+DAOS_POOL_SIZE=4G
 
 ANSI_COLOR_BLACK=30
 ANSI_COLOR_RED=31
@@ -134,11 +134,11 @@ function stop
 
 function wait_for_user
 {
-#	read -p "Press 'y' or 'Enter' to proceed to the next step, or 'q' to quit: " response
-#	if [[ "$response" == "q" ]]; then
-#		echo "Exiting as per user request."
-#		exit 0
-#	fi
+	read -p "Press 'y' or 'Enter' to proceed to the next step, or 'q' to quit: " response
+	if [[ "$response" == "q" ]]; then
+		echo "Exiting as per user request."
+		exit 0
+	fi
 	info ""
 }
 
@@ -154,7 +154,7 @@ function start
 	fi
 
 	info "Waiting for daos-server services to be started"
-	timeout_counter=5
+	timeout_counter=100
 	until docker exec daos-server systemctl --quiet is-active daos_server > /dev/null 2>&1 ; do
 		info "daos-server not yet ready: timeout=$timeout_counter"
 		sleep 1
@@ -164,7 +164,7 @@ function start
 	done
 
 	wait_for_user
-	timeout_counter=10
+	timeout_counter=100
 	until docker exec daos-server grep -q -e "format required" /tmp/daos_server.log > /dev/null 2>&1 ; do
 		info "Waiting DAOS file system for being ready to be formatted : timeout=$timeout_counter"
 		sleep 1
