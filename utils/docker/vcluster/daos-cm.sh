@@ -8,7 +8,7 @@ VERSION=0.3
 CWD="$(realpath "${0%}")"
 CWD="${CWD%/*}"
 
-DAOS_POOL_SIZE=4G
+DAOS_POOL_SIZE=16G
 
 ANSI_COLOR_BLACK=30
 ANSI_COLOR_RED=31
@@ -31,7 +31,8 @@ TRACE_LEVEL_QUIET=-1
 TRACE_LEVEL_STANDARD=0
 TRACE_LEVEL_VERBOSE=1
 TRACE_LEVEL_DEBUG=2
-TRACE_LEVEL=2 #$TRACE_LEVEL_STANDARD
+TRACE_LEVEL_STEP=3
+TRACE_LEVEL=3 #$TRACE_LEVEL_STANDARD
 
 function debug
 {
@@ -134,12 +135,16 @@ function stop
 
 function wait_for_user
 {
-	read -p "Press 'y' or 'Enter' to proceed to the next step, or 'q' to quit: " response
-	if [[ "$response" == "q" ]]; then
-		echo "Exiting as per user request."
-		exit 0
-	fi
-	info ""
+    if [[ $TRACE_LEVEL -ge $TRACE_LEVEL_STEP ]]
+    then
+        read -p "Press 'y' or 'Enter' to proceed to the next step, or 'q' to quit: " response
+        if [[ "$response" == "q" ]]; then
+            echo "Exiting as per user request."
+            exit 0
+        fi  
+    else
+        info ""
+    fi  
 }
 
 function start

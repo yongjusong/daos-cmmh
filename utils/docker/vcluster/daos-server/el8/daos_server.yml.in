@@ -46,7 +46,7 @@ engines:
         bdev_roles:
           - data
       - class: kdev
-        bdev_list: ['/dev/pmem0']
+        bdev_list: ['/dev/nvme1n1']
         bdev_roles:
           - meta
           - wal 
