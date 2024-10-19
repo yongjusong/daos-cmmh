@@ -94,3 +94,8 @@ RUN	for it in DAOS_AUTH DAOS_AGENT_IFACE_CFG DAOS_AGENT_IFACE_NUMA_NODE DAOS_AGE
 			/tmp/daos_agent.yml.in ;                                                   \
 	fi &&                                                                                      \
 	mv -f /tmp/daos_agent.yml.in /etc/daos/daos_agent.yml
+
+# Install fio
+RUN dnf install -y fio && \
+    dnf clean all
+
