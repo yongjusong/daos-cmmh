@@ -42,14 +42,15 @@ engines:
         scm_size: @DAOS_SCM_SIZE@
       - class: kdev
         bdev_list: ['/dev/nvme0n1']
+        bdev_roles:
+          - data 
+          #- class: kdev
+      #bdev_list: ['/dev/pmem0']
         #bdev_list: ['0000:01:00.0'] #, '0000:03:00.0', '0000:43:00.0', '0000:44:00.0']
-        bdev_roles:
-          - data
-      - class: kdev
-        bdev_list: ['/dev/nvme1n1']
-        bdev_roles:
+        #bdev_roles:
+          - wal
           - meta
-          - wal 
+
 #    storage:
 #      - class: ram
 #        scm_mount: /mnt/daos

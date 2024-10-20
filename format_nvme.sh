@@ -16,7 +16,7 @@ do
         tune2fs -O ^has_journal "/dev/nvme${SET}n1"
         e2fsck -f "/dev/nvme${SET}n1"
 
-        mount -o rw,noatime,nodiratime,block_validity,delalloc,nojournal_checksum,barrier,user_xattr,acl -t ext4 "/dev/nvme${SET}n1" "/mnt/nvme${SET}n1"
+        #mount -o rw,noatime,nodiratime,block_validity,delalloc,nojournal_checksum,barrier,user_xattr,acl -t ext4 "/dev/nvme${SET}n1" "/mnt/nvme${SET}n1"
 
         sleep 1
 done

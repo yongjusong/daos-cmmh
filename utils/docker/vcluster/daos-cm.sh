@@ -8,7 +8,7 @@ VERSION=0.3
 CWD="$(realpath "${0%}")"
 CWD="${CWD%/*}"
 
-DAOS_POOL_SIZE=16G
+DAOS_POOL_SIZE=256G
 
 ANSI_COLOR_BLACK=30
 ANSI_COLOR_RED=31
@@ -32,7 +32,7 @@ TRACE_LEVEL_STANDARD=0
 TRACE_LEVEL_VERBOSE=1
 TRACE_LEVEL_DEBUG=2
 TRACE_LEVEL_STEP=3
-TRACE_LEVEL=3 #$TRACE_LEVEL_STANDARD
+TRACE_LEVEL=2 #$TRACE_LEVEL_STANDARD
 
 function debug
 {
@@ -203,7 +203,9 @@ function start
 
 	wait_for_user
 	info "Creating pool tank of $DAOS_POOL_SIZE"
-	if ! run docker exec daos-admin dmg pool create --size="$DAOS_POOL_SIZE" tank ; then
+	#if ! run docker exec daos-admin dmg pool create --size="$DAOS_POOL_SIZE" tank ; then
+	if ! run docker exec daos-admin dmg pool create --meta-size="8GB" --scm-size="4GB" --nvme-size="$DAOS_POOL_SIZE" tank ; then
+
 		fatal "DAOS pool tank of $DAOS_POOL_SIZE could not be created"
 	fi
 
