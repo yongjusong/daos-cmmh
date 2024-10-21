@@ -1,0 +1,96 @@
+test: (g=0): rw=randread, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=libaio, iodepth=1
+...
+fio-3.19
+Starting 32 processes
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+
+test: (groupid=0, jobs=32): err= 0: pid=448424: Tue Oct 22 00:25:37 2024
+  read: IOPS=12.3M, BW=46.0GiB/s (50.5GB/s)(2820GiB/60002msec)
+    slat (nsec): min=1170, max=129480, avg=1590.74, stdev=170.40
+    clat (nsec): min=509, max=317800, avg=747.71, stdev=88.72
+     lat (nsec): min=1871, max=319260, avg=2380.29, stdev=196.36
+    clat percentiles (nsec):
+     |  1.00th=[  732],  5.00th=[  732], 10.00th=[  740], 20.00th=[  740],
+     | 30.00th=[  740], 40.00th=[  740], 50.00th=[  740], 60.00th=[  748],
+     | 70.00th=[  748], 80.00th=[  748], 90.00th=[  748], 95.00th=[  764],
+     | 99.00th=[  772], 99.50th=[  804], 99.90th=[ 1224], 99.95th=[ 3056],
+     | 99.99th=[ 4016]
+   bw (  MiB/s): min=47920, max=49151, per=100.00%, avg=48194.53, stdev= 4.52, samples=3808
+   iops        : min=12267708, max=12582855, avg=12337799.34, stdev=1156.65, samples=3808
+  lat (nsec)   : 750=54.97%, 1000=44.86%
+  lat (usec)   : 2=0.09%, 4=0.07%, 10=0.01%, 20=0.01%, 50=0.01%
+  lat (usec)   : 100=0.01%, 250=0.01%, 500=0.01%
+  cpu          : usr=18.26%, sys=81.52%, ctx=875, majf=0, minf=832
+  IO depths    : 1=100.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=0.0%
+     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     issued rwts: total=739128374,0,0,0 short=0,0,0,0 dropped=0,0,0,0
+     latency   : target=0, window=0, percentile=100.00%, depth=1
+
+Run status group 0 (all jobs):
+   READ: bw=46.0GiB/s (50.5GB/s), 46.0GiB/s-46.0GiB/s (50.5GB/s-50.5GB/s), io=2820GiB (3027GB), run=60002-60002msec
+
+Disk stats (read/write):
+  pmem0: ios=0/0, merge=0/0, ticks=0/0, in_queue=0, util=0.00%

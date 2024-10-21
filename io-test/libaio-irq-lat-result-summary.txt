@@ -1,0 +1,10 @@
+     lat (usec): min=22, max=882, avg=66.71, stdev= 5.94
+     lat (usec): min=29, max=136, avg=71.31, stdev= 4.86
+     lat (usec): min=46, max=134, avg=77.09, stdev= 4.75
+     lat (usec): min=79, max=155, avg=86.13, stdev= 4.82
+     lat (usec): min=99, max=192, avg=105.46, stdev= 4.88
+     lat (usec): min=21, max=265, avg=66.85, stdev=10.99
+     lat (usec): min=24, max=268, avg=71.04, stdev=14.31
+     lat (usec): min=25, max=270, avg=74.95, stdev=18.86
+     lat (usec): min=28, max=6448, avg=81.25, stdev=29.29
+     lat (usec): min=33, max=276, avg=87.89, stdev=26.78

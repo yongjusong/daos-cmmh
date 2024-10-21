@@ -104,4 +104,3 @@ ENV PATH="/opt/io500/bin:${PATH}"
 
 # Set the entrypoint
 CMD ["/sbin/init"]
-

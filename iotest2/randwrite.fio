@@ -1,0 +1,13 @@
+[global]
+bs=4K
+direct=1
+rw=randwrite
+ioengine=libaio
+time_based=1
+runtime=60s
+[test]
+directory=/mnt/pmem0
+iodepth=1
+numjobs=32
+size=10g
+group_reporting=1

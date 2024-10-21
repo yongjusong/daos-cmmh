@@ -1,0 +1,49 @@
+test: (g=0): rw=randwrite, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=libaio, iodepth=1
+...
+fio-3.19
+Starting 16 processes
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+
+test: (groupid=0, jobs=16): err=28 (file:io_u.c:1803, func=io_u error, error=No space left on device): pid=448989: Tue Oct 22 00:30:54 2024
+  write: IOPS=327k, BW=1278MiB/s (1340MB/s)(74.9GiB/60001msec); 0 zone resets
+    slat (nsec): min=1560, max=148910, avg=2028.87, stdev=1184.41
+    clat (nsec): min=530, max=142280, avg=745.99, stdev=80.65
+     lat (usec): min=2, max=158, avg= 2.82, stdev= 1.18
+    clat percentiles (nsec):
+     |  1.00th=[  700],  5.00th=[  724], 10.00th=[  740], 20.00th=[  740],
+     | 30.00th=[  740], 40.00th=[  740], 50.00th=[  740], 60.00th=[  748],
+     | 70.00th=[  748], 80.00th=[  748], 90.00th=[  748], 95.00th=[  764],
+     | 99.00th=[  772], 99.50th=[  860], 99.90th=[ 1224], 99.95th=[ 2736],
+     | 99.99th=[ 3792]
+   bw (  MiB/s): min=  494, max= 1423, per=100.00%, avg=1280.44, stdev=275.57, samples=119
+   iops        : min=126714, max=364526, avg=327793.14, stdev=70547.12, samples=119
+  lat (nsec)   : 750=57.25%, 1000=42.57%
+  lat (usec)   : 2=0.11%, 4=0.07%, 10=0.01%, 20=0.01%, 50=0.01%
+  lat (usec)   : 250=0.01%
+  cpu          : usr=17.51%, sys=82.29%, ctx=178, majf=0, minf=373
+  IO depths    : 1=100.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=0.0%
+     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     issued rwts: total=0,19627282,0,0 short=0,0,0,0 dropped=0,0,0,0
+     latency   : target=0, window=0, percentile=100.00%, depth=1
+
+Run status group 0 (all jobs):
+  WRITE: bw=1278MiB/s (1340MB/s), 1278MiB/s-1278MiB/s (1340MB/s-1340MB/s), io=74.9GiB (80.4GB), run=60001-60001msec
+
+Disk stats (read/write):
+  pmem0: ios=0/0, merge=0/0, ticks=0/0, in_queue=0, util=0.00%

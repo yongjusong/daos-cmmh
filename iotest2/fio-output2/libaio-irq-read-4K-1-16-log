@@ -1,0 +1,64 @@
+test: (g=0): rw=read, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=libaio, iodepth=1
+...
+fio-3.19
+Starting 16 processes
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+
+test: (groupid=0, jobs=16): err= 0: pid=446873: Tue Oct 22 00:10:18 2024
+  read: IOPS=6584k, BW=25.1GiB/s (26.0GB/s)(1507GiB/60003msec)
+    slat (nsec): min=1140, max=376600, avg=1510.79, stdev=251.24
+    clat (nsec): min=500, max=372130, avg=722.14, stdev=165.75
+     lat (nsec): min=1790, max=378460, avg=2272.39, stdev=305.67
+    clat percentiles (nsec):
+     |  1.00th=[  700],  5.00th=[  708], 10.00th=[  708], 20.00th=[  708],
+     | 30.00th=[  724], 40.00th=[  724], 50.00th=[  724], 60.00th=[  724],
+     | 70.00th=[  724], 80.00th=[  724], 90.00th=[  732], 95.00th=[  732],
+     | 99.00th=[  740], 99.50th=[  820], 99.90th=[ 1192], 99.95th=[ 3088],
+     | 99.99th=[ 4016]
+   bw (  MiB/s): min=25685, max=25891, per=100.00%, avg=25760.32, stdev=13.70, samples=1904
+   iops        : min=6575444, max=6628303, avg=6594642.05, stdev=3507.21, samples=1904
+  lat (nsec)   : 750=99.15%, 1000=0.68%
+  lat (usec)   : 2=0.09%, 4=0.07%, 10=0.01%, 20=0.01%, 50=0.01%
+  lat (usec)   : 100=0.01%, 250=0.01%, 500=0.01%
+  cpu          : usr=16.22%, sys=83.54%, ctx=1274, majf=0, minf=474
+  IO depths    : 1=100.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=0.0%
+     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     issued rwts: total=395056608,0,0,0 short=0,0,0,0 dropped=0,0,0,0
+     latency   : target=0, window=0, percentile=100.00%, depth=1
+
+Run status group 0 (all jobs):
+   READ: bw=25.1GiB/s (26.0GB/s), 25.1GiB/s-25.1GiB/s (26.0GB/s-26.0GB/s), io=1507GiB (1618GB), run=60003-60003msec
+
+Disk stats (read/write):
+  pmem0: ios=0/0, merge=0/0, ticks=0/0, in_queue=0, util=0.00%

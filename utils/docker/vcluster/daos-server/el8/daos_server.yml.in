@@ -45,7 +45,7 @@ engines:
         bdev_roles:
           - data 
           #- class: kdev
-      #bdev_list: ['/dev/pmem0']
+          #bdev_list: ['/dev/pmem0']
         #bdev_list: ['0000:01:00.0'] #, '0000:03:00.0', '0000:43:00.0', '0000:44:00.0']
         #bdev_roles:
           - wal

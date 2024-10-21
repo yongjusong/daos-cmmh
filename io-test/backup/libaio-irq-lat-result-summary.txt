@@ -1,0 +1,5 @@
+     lat (usec): min=22, max=198, avg=66.50, stdev= 4.86
+     lat (usec): min=29, max=948, avg=72.14, stdev= 4.98
+     lat (usec): min=46, max=143, avg=75.87, stdev= 4.79
+     lat (usec): min=31, max=265, avg=85.71, stdev= 4.86
+     lat (usec): min=91, max=220, avg=105.02, stdev= 4.87
