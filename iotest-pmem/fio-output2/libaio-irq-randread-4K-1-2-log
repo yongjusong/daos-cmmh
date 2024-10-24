@@ -1,0 +1,36 @@
+test: (g=0): rw=randread, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=libaio, iodepth=1
+...
+fio-3.19
+Starting 2 processes
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+
+test: (groupid=0, jobs=2): err= 0: pid=470986: Thu Oct 24 14:58:10 2024
+  read: IOPS=704k, BW=2749MiB/s (2883MB/s)(161GiB/60001msec)
+    slat (nsec): min=1289, max=110600, avg=1831.92, stdev=222.75
+    clat (nsec): min=530, max=109320, avg=741.60, stdev=93.08
+     lat (nsec): min=1931, max=119840, avg=2618.13, stdev=245.83
+    clat percentiles (nsec):
+     |  1.00th=[  724],  5.00th=[  732], 10.00th=[  732], 20.00th=[  732],
+     | 30.00th=[  732], 40.00th=[  740], 50.00th=[  740], 60.00th=[  740],
+     | 70.00th=[  740], 80.00th=[  740], 90.00th=[  748], 95.00th=[  748],
+     | 99.00th=[  772], 99.50th=[  844], 99.90th=[ 1176], 99.95th=[ 3280],
+     | 99.99th=[ 4192]
+   bw (  MiB/s): min= 2744, max= 2769, per=100.00%, avg=2753.63, stdev= 3.36, samples=238
+   iops        : min=702636, max=709004, avg=704928.18, stdev=860.34, samples=238
+  lat (nsec)   : 750=83.92%, 1000=15.92%
+  lat (usec)   : 2=0.09%, 4=0.06%, 10=0.01%, 20=0.01%, 50=0.01%
+  lat (usec)   : 100=0.01%, 250=0.01%
+  cpu          : usr=17.09%, sys=82.66%, ctx=89, majf=0, minf=53
+  IO depths    : 1=100.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=0.0%
+     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     issued rwts: total=42230407,0,0,0 short=0,0,0,0 dropped=0,0,0,0
+     latency   : target=0, window=0, percentile=100.00%, depth=1
+
+Run status group 0 (all jobs):
+   READ: bw=2749MiB/s (2883MB/s), 2749MiB/s-2749MiB/s (2883MB/s-2883MB/s), io=161GiB (173GB), run=60001-60001msec
+
+Disk stats (read/write):
+  pmem0: ios=0/0, merge=0/0, ticks=0/0, in_queue=0, util=0.00%

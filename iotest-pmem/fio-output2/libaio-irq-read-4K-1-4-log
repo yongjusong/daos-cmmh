@@ -1,0 +1,40 @@
+test: (g=0): rw=read, bs=(R) 4096B-4096B, (W) 4096B-4096B, (T) 4096B-4096B, ioengine=libaio, iodepth=1
+...
+fio-3.19
+Starting 4 processes
+test: Laying out IO file (1 file / 10240MiB)
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+test: Laying out IO file (1 file / 10240MiB)
+fio: ENOSPC on laying out file, stopping
+
+test: (groupid=0, jobs=4): err= 0: pid=469641: Thu Oct 24 14:45:17 2024
+  read: IOPS=1579k, BW=6169MiB/s (6469MB/s)(361GiB/60002msec)
+    slat (nsec): min=1260, max=322220, avg=1605.63, stdev=175.61
+    clat (nsec): min=500, max=96910, avg=725.31, stdev=79.92
+     lat (nsec): min=1850, max=323260, avg=2371.61, stdev=200.27
+    clat percentiles (nsec):
+     |  1.00th=[  708],  5.00th=[  708], 10.00th=[  708], 20.00th=[  724],
+     | 30.00th=[  724], 40.00th=[  724], 50.00th=[  724], 60.00th=[  724],
+     | 70.00th=[  732], 80.00th=[  732], 90.00th=[  732], 95.00th=[  740],
+     | 99.00th=[  748], 99.50th=[  820], 99.90th=[ 1176], 99.95th=[ 2960],
+     | 99.99th=[ 3920]
+   bw (  MiB/s): min= 6105, max= 6252, per=100.00%, avg=6178.81, stdev=26.25, samples=476
+   iops        : min=1563096, max=1600662, avg=1581774.45, stdev=6720.66, samples=476
+  lat (nsec)   : 750=98.54%, 1000=1.30%
+  lat (usec)   : 2=0.08%, 4=0.06%, 10=0.01%, 20=0.01%, 50=0.01%
+  lat (usec)   : 100=0.01%
+  cpu          : usr=15.88%, sys=83.90%, ctx=253, majf=0, minf=108
+  IO depths    : 1=100.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=0.0%
+     submit    : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=100.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=0.0%, >=64=0.0%
+     issued rwts: total=94763271,0,0,0 short=0,0,0,0 dropped=0,0,0,0
+     latency   : target=0, window=0, percentile=100.00%, depth=1
+
+Run status group 0 (all jobs):
+   READ: bw=6169MiB/s (6469MB/s), 6169MiB/s-6169MiB/s (6469MB/s-6469MB/s), io=361GiB (388GB), run=60002-60002msec
+
+Disk stats (read/write):
+  pmem0: ios=0/0, merge=0/0, ticks=0/0, in_queue=0, util=0.00%

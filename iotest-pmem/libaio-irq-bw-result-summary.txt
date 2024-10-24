@@ -1,0 +1,24 @@
+  read: IOPS=384k, BW=1500MiB/s (1573MB/s)(87.9GiB/60001msec)
+  read: IOPS=795k, BW=3106MiB/s (3256MB/s)(182GiB/60001msec)
+  read: IOPS=1579k, BW=6169MiB/s (6469MB/s)(361GiB/60002msec)
+  read: IOPS=3192k, BW=12.2GiB/s (13.1GB/s)(731GiB/60001msec)
+  read: IOPS=6364k, BW=24.3GiB/s (26.1GB/s)(1457GiB/60002msec)
+  read: IOPS=12.3M, BW=46.9GiB/s (50.4GB/s)(2814GiB/60003msec)
+  write: IOPS=297k, BW=1159MiB/s (1215MB/s)(67.9GiB/60001msec); 0 zone resets
+  write: IOPS=319k, BW=1246MiB/s (1306MB/s)(72.0GiB/60001msec); 0 zone resets
+  write: IOPS=315k, BW=1229MiB/s (1289MB/s)(72.0GiB/60001msec); 0 zone resets
+  write: IOPS=318k, BW=1244MiB/s (1304MB/s)(72.9GiB/60001msec); 0 zone resets
+  write: IOPS=317k, BW=1237MiB/s (1297MB/s)(72.5GiB/60001msec); 0 zone resets
+  write: IOPS=318k, BW=1241MiB/s (1301MB/s)(72.7GiB/60001msec); 0 zone resets
+  read: IOPS=349k, BW=1363MiB/s (1429MB/s)(79.9GiB/60001msec)
+  read: IOPS=704k, BW=2749MiB/s (2883MB/s)(161GiB/60001msec)
+  read: IOPS=1484k, BW=5798MiB/s (6079MB/s)(340GiB/60001msec)
+  read: IOPS=3037k, BW=11.6GiB/s (12.4GB/s)(695GiB/60003msec)
+  read: IOPS=6137k, BW=23.4GiB/s (25.1GB/s)(1405GiB/60002msec)
+  read: IOPS=11.6M, BW=44.3GiB/s (47.6GB/s)(2658GiB/60002msec)
+  write: IOPS=283k, BW=1105MiB/s (1159MB/s)(64.8GiB/60001msec); 0 zone resets
+  write: IOPS=284k, BW=1108MiB/s (1162MB/s)(64.9GiB/60001msec); 0 zone resets
+  write: IOPS=280k, BW=1094MiB/s (1148MB/s)(64.1GiB/60001msec); 0 zone resets
+  write: IOPS=284k, BW=1108MiB/s (1162MB/s)(64.9GiB/60001msec); 0 zone resets
+  write: IOPS=283k, BW=1106MiB/s (1160MB/s)(64.8GiB/60001msec); 0 zone resets
+  write: IOPS=284k, BW=1111MiB/s (1165MB/s)(65.1GiB/60001msec); 0 zone resets
